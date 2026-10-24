@@ -1,0 +1,24 @@
+{
+  "name": "CollegeConnectors",
+  "short_name": "CC",
+  "description": "Connect, build, and grow with peers, faculty, and industry mentors.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffcf0",
+  "theme_color": "#fffcf0",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

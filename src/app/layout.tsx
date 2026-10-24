@@ -1,53 +1,54 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Outfit } from "next/font/google";
-import { CartProvider } from "@/lib/cart";
-import { SiteNav } from "@/components/brand/SiteNav";
-import { CartDrawer } from "@/components/brand/CartDrawer";
-import { Cursor } from "@/components/brand/Cursor";
-import { SiteFooter } from "@/components/brand/SiteFooter";
+import { DM_Sans } from "next/font/google";
+import { RungProvider } from "@/lib/rung-store";
+import { AppShell } from "@/components/rung/AppShell";
 import "./globals.css";
 
-const display = Instrument_Serif({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-});
-
-const body = Outfit({
+const body = DM_Sans({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Apsara & Co. — Modern Ayurvedic Skincare",
-    template: "%s · Apsara & Co.",
+    default: "CollegeConnectors",
+    template: "%s · CollegeConnectors",
   },
   description:
-    "Modern Ayurvedic skincare. Time-tested botanicals, clean formulas, dermatologist tested.",
-  openGraph: {
-    title: "Apsara & Co.",
-    description: "Modern Ayurveda for everyday skin.",
+    "CollegeConnectors — doomscroll demos, match with peers, earn points, unlock mentor minutes.",
+  applicationName: "CollegeConnectors",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "CollegeConnectors",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+    icon: "/icons/icon-192.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c5029",
+  themeColor: "#fffcf0",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-body">
-        <CartProvider>
-          <SiteNav />
-          <CartDrawer />
-          <Cursor />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </CartProvider>
+    <html lang="en" className={`${body.variable} h-full antialiased`}>
+      <body className="font-body text-rung-fg">
+        <RungProvider>
+          <AppShell>{children}</AppShell>
+        </RungProvider>
       </body>
     </html>
   );

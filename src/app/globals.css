@@ -5,209 +5,116 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-body);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-display);
-  --font-display: var(--font-display);
+  --font-display: var(--font-body);
   --font-body: var(--font-body);
-  --color-ink: var(--ink);
-  --color-forest: var(--forest);
-  --color-forest-deep: var(--forest-deep);
-  --color-magenta: var(--magenta);
-  --color-beetroot: var(--beetroot);
-  --color-rose: var(--rose);
-  --color-lotus: var(--lotus);
-  --color-petal: var(--petal);
-  --color-blush: var(--blush);
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-gold-deep: var(--gold-deep);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-rung-bg: var(--rung-bg);
+  --color-rung-fg: var(--rung-fg);
+  --color-rung-panel: var(--rung-panel);
+  --color-rung-mute: var(--rung-mute);
+  --color-rung-ember: var(--rung-ember);
+  --color-rung-mint: var(--rung-mint);
+  --color-rung-peach: var(--rung-peach);
+  --color-rung-lav: var(--rung-lav);
+  --color-background: var(--rung-bg);
+  --color-foreground: var(--rung-fg);
+  --color-primary: var(--rung-ember);
+  --color-primary-foreground: #fff;
+  --color-border: rgb(60 45 90 / 0.08);
+  --radius-lg: 1rem;
 }
 
-/* Moodboard greens and magenta on a pink-lotus base */
 :root {
-  --ink: #0a1c10;
-  --forest: #0c5029;
-  --forest-deep: #0b3019;
-  --magenta: #a11047;
-  --beetroot: #4d0821;
-  --rose: #e0507e;
-  --lotus: #f3bfd0;
-  --petal: #fae3ea;
-  --blush: #fff6f8;
-  --gold: #b8893a;
-  --gold-light: #e3c27c;
-  --gold-deep: #8a6224;
+  /* Palette used sparingly — surfaces stay calm */
+  --butter: #ffffc5;
+  --lav: #e5ccff;
+  --peach: #ffe2c5;
 
-  --background: #fff6f8;
-  --foreground: #0a1c10;
-  --card: #ffffff;
-  --card-foreground: #0a1c10;
-  --popover: #ffffff;
-  --popover-foreground: #0a1c10;
-  --primary: #0c5029;
-  --primary-foreground: #ffffff;
-  --secondary: #fae3ea;
-  --secondary-foreground: #0a1c10;
-  --muted: #fae3ea;
-  --muted-foreground: color-mix(in srgb, #0a1c10 62%, transparent);
-  --accent: #a11047;
-  --accent-foreground: #ffffff;
-  --destructive: #c4163f;
-  --border: color-mix(in srgb, #0a1c10 12%, transparent);
-  --input: color-mix(in srgb, #0a1c10 18%, transparent);
-  --ring: #0c5029;
-  --chart-1: #0c5029;
-  --chart-2: #e0507e;
-  --chart-3: #a11047;
-  --chart-4: #f3bfd0;
-  --chart-5: #0a1c10;
-  --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0a1c10;
-  --sidebar-primary: #0c5029;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fae3ea;
-  --sidebar-accent-foreground: #0a1c10;
-  --sidebar-border: color-mix(in srgb, #0a1c10 12%, transparent);
-  --sidebar-ring: #0c5029;
+  --rung-bg: #fffcf0;
+  --rung-panel: #ffffff;
+  --rung-peach: #fff4e8;
+  --rung-lav: #f6efff;
+  --rung-fg: #2a2438;
+  --rung-mute: #7a738a;
+  --rung-ember: #6b4db8;
+  --rung-mint: #c9a86a;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
-    background: var(--blush);
+    background: #1e1a28;
+    color: var(--rung-fg);
+    overscroll-behavior: none;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    user-select: none;
     font-family: var(--font-body), system-ui, sans-serif;
-    overflow-x: clip;
+    background: #1e1a28;
   }
 
-  ::selection {
-    background: var(--lotus);
-    color: var(--ink);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-    }
+  input,
+  textarea {
+    user-select: text;
   }
 }
 
-@layer utilities {
-  .font-display {
-    font-family: var(--font-display), "Times New Roman", serif;
-  }
-
-  .eyebrow {
-    font-family: var(--font-body), system-ui, sans-serif;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Soft pink lotus wash, darkest at the top like a petal tip */
-  .lotus-bg {
-    background:
-      radial-gradient(90% 70% at 85% 10%, #f6c3d3 0%, transparent 60%),
-      radial-gradient(70% 60% at 0% 100%, #fbd9e3 0%, transparent 65%),
-      linear-gradient(180deg, #fde8ee 0%, #fff6f8 100%);
-  }
-
-  /* Page-header wash that trails off below the header instead of ending in a line */
-  .lotus-wash {
-    padding-bottom: 360px;
-    margin-bottom: -360px;
-    background:
-      radial-gradient(65% 520px at 85% 0%, #f6c3d3 0%, transparent 70%),
-      radial-gradient(45% 480px at 0% 260px, #fbd9e3 0%, transparent 70%),
-      linear-gradient(180deg, #fde8ee 0%, #fcedf1 calc(100% - 360px), #fff6f8 100%);
-  }
-
-  /* Polished gold-leaf text; position can be driven by scroll for a sheen */
-  .gold-foil {
-    background-image: linear-gradient(
-      100deg,
-      #8a6224 0%,
-      #c79a45 20%,
-      #f6e3a8 38%,
-      #b8893a 55%,
-      #e8c879 72%,
-      #8a6224 100%
-    );
-    background-size: 250% 100%;
-    background-position: 0% 50%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  .gold-fill {
-    background-image: linear-gradient(110deg, #9d6e26, #e3c27c 35%, #f6e3a8 50%, #c79a45 70%, #9d6e26);
-  }
-
-  .gold-hairline {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold-light) 50%, var(--gold) 80%, transparent);
-  }
-
-  .scrollbar-none {
-    scrollbar-width: none;
-  }
-
-  .scrollbar-none::-webkit-scrollbar {
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* iPhone 17 Pro — 402 × 874 */
+.app-device {
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--rung-bg);
+}
+
+@media (min-width: 440px) {
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+  }
+
+  .app-device {
+    width: 402px;
+    height: 874px;
+    min-height: 874px;
+    max-height: 874px;
+    border-radius: 3.15rem;
+    box-shadow:
+      0 0 0 10px #14111c,
+      0 0 0 11px #3a3348,
+      0 24px 64px rgb(0 0 0 / 0.45);
+  }
+
+  .app-device::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    z-index: 60;
+    height: 34px;
+    width: 126px;
+    translate: -50% 0;
+    border-radius: 999px;
+    background: #14111c;
   }
 }
