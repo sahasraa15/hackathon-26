@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { scoreGithubRepos, type GhRepo } from "@/lib/github-score";
+import { computeGithubProfile } from "@/lib/github-profile";
 
 /** Read cached score, or rescore with stored token. */
 export async function GET() {
@@ -19,42 +19,12 @@ export async function GET() {
     return NextResponse.json({ connected: false }, { status: 401 });
   }
 
-  const ghHeaders = {
-    Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${token}`,
-    "User-Agent": "CollegeConnectors",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
-
-  const userRes = await fetch("https://api.github.com/user", {
-    headers: ghHeaders,
-  });
-  if (!userRes.ok) {
-    return NextResponse.json({ connected: false }, { status: 401 });
+  let payload;
+  try {
+    payload = await computeGithubProfile(token);
+  } catch {
+    return NextResponse.json({ error: "score_failed" }, { status: 502 });
   }
-  const user = (await userRes.json()) as { login: string; name?: string };
-
-  const reposRes = await fetch(
-    "https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator",
-    { headers: ghHeaders },
-  );
-  if (!reposRes.ok) {
-    return NextResponse.json({ error: "repos_failed" }, { status: 502 });
-  }
-  const repos = (await reposRes.json()) as GhRepo[];
-  const breakdown = scoreGithubRepos(repos);
-
-  const payload = {
-    login: user.login,
-    name: user.name ?? null,
-    score: breakdown.score,
-    repoCount: breakdown.repoCount,
-    originalCount: breakdown.originalCount,
-    languages: breakdown.languages.slice(0, 8),
-    highlights: breakdown.highlights,
-    factors: breakdown.factors,
-    scoredAt: Date.now(),
-  };
 
   cookieStore.set("cc_gh_profile", JSON.stringify(payload), {
     httpOnly: false,
