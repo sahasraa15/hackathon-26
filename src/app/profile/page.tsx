@@ -303,7 +303,7 @@ function ProfileInner() {
                 ))}
               </ul>
             )}
-            <GithubFeedback score ={githubProfile.scoredAt} />
+            <GithubFeedback scoredAt={githubProfile.scoredAt} />
             <div className="flex gap-2 pt-1">
               <a
                 href="/api/auth/github?returnTo=/profile"
@@ -328,6 +328,27 @@ function ProfileInner() {
             <GithubMark />
             Connect GitHub
           </a>
+        )}
+        {!githubProfile && (
+          <form
+            action="/api/github/public"
+            method="get"
+            className="mt-2 flex gap-2"
+          >
+            <input
+              name="login"
+              defaultValue="sush0731"
+              aria-label="GitHub username"
+              placeholder="or score a public username"
+              className="min-w-0 flex-1 rounded-full bg-[#fffcf0] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
+            />
+            <button
+              type="submit"
+              className="rounded-full border border-black/[0.08] px-3 py-2 text-xs font-semibold text-rung-fg"
+            >
+              Score it
+            </button>
+          </form>
         )}
         {ghError && (
           <p className="mt-3 text-xs text-red-600">{ghError}</p>
