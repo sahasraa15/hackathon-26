@@ -34,6 +34,8 @@ export async function GET(request: Request) {
 
   const redirectUri =
     process.env.GITHUB_REDIRECT_URI || `${origin}/api/auth/github/callback`;
+    process.env.GITHUB_REDIRECT_URI ||
+    `${origin}/api/auth/github/callback`;
 
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",

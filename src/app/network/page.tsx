@@ -27,6 +27,7 @@ export default function NetworkPage() {
     setQuestion,
     myMajor,
     majorOnly,
+    exploreMajors,
   } = useRung();
   const [dmTo, setDmTo] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -58,10 +59,14 @@ export default function NetworkPage() {
         ) {
           return false;
         }
-        if (majorOnly && !sameMajorFamily(p.major, myMajor)) return false;
+        if (
+          majorOnly &&
+          !sameMajorFamily(p.major, myMajor, exploreMajors)
+        )
+          return false;
         return true;
       }),
-    [collegeFilter, majorOnly, myMajor],
+    [collegeFilter, majorOnly, myMajor, exploreMajors],
   );
 
   return (

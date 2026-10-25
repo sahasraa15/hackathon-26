@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import {
   majors,
+  majorsForFilter,
+  professionFields,
   projectsForRating,
   ratingTone,
   sponsorProjects,
@@ -44,6 +46,10 @@ function ProfileInner() {
     setMajorOnly,
     applyGithubScore,
     clearGithubProfile,
+    exploreMajors,
+    setExploreMajors,
+    proFields: proFieldIds,
+    setProFields,
   } = useRung();
   const tone = ratingTone(githubRating);
   const nextProjects = projectsForRating(githubRating).slice(0, 2);
@@ -132,7 +138,8 @@ function ProfileInner() {
         <section className="mt-6 rounded-2xl border border-black/[0.06] bg-white p-4">
           <p className="text-sm font-semibold text-rung-fg">Your major</p>
           <p className="mt-1 text-xs text-rung-mute">
-            Feed, Reels, Match & Stories only show this major.
+            Feed, Reels, Match & Stories show this major plus the ones you
+            explore.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {majors.map((m) => (
@@ -151,19 +158,104 @@ function ProfileInner() {
               </button>
             ))}
           </div>
+          <p className="mt-5 text-sm font-semibold text-rung-fg">
+            Also explore
+          </p>
+          <p className="mt-1 text-xs text-rung-mute">
+            Other majors mixed into your feed.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {majors
+              .filter((m) => !majorsForFilter(myMajor).includes(m))
+              .map((m) => {
+                const on = exploreMajors.includes(m);
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() =>
+                      setExploreMajors(
+                        on
+                          ? exploreMajors.filter((x) => x !== m)
+                          : [...exploreMajors, m],
+                      )
+                    }
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-medium",
+                      on
+                        ? "bg-[#ffe2c5] text-rung-fg"
+                        : "bg-[#fffcf0] text-rung-mute ring-1 ring-black/[0.06]",
+                    )}
+                  >
+                    {m}
+                  </button>
+                );
+              })}
+          </div>
           <button
             type="button"
             onClick={() => setMajorOnly(!majorOnly)}
             className="mt-4 w-full rounded-full border border-black/[0.08] py-2.5 text-sm font-medium text-rung-fg"
           >
-            {majorOnly ? "Showing: my major" : "Showing: all majors"}
+            {majorOnly ? "Showing: my picks" : "Showing: all majors"}
           </button>
-          <Link
-            href="/projects"
-            className="mt-3 inline-block text-sm font-medium text-rung-ember"
-          >
-            Browse projects →
-          </Link>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <Link
+              href="/my-projects"
+              className="text-sm font-medium text-rung-ember"
+            >
+              My projects →
+            </Link>
+            <Link
+              href="/projects"
+              className="text-sm font-medium text-rung-ember"
+            >
+              Browse projects →
+            </Link>
+            <Link
+              href="/mentors"
+              className="text-sm font-medium text-rung-ember"
+            >
+              Spend points on mentors →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {session === "professional" && (
+        <section className="mt-6 rounded-2xl border border-black/[0.06] bg-white p-4">
+          <p className="text-sm font-semibold text-rung-fg">Your fields</p>
+          <p className="mt-1 text-xs text-rung-mute">
+            Your feedback queue shows students in these fields first.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {professionFields.map((f) => {
+              const on = proFieldIds.includes(f.id);
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setProFields(
+                      on
+                        ? proFieldIds.filter((x) => x !== f.id)
+                        : [...proFieldIds, f.id],
+                    )
+                  }
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium",
+                    on
+                      ? "bg-[#ffe2c5] text-rung-fg"
+                      : "bg-[#fffcf0] text-rung-mute ring-1 ring-black/[0.06]",
+                  )}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
         </section>
       )}
 

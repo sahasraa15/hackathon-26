@@ -28,7 +28,7 @@ const kindAccent = {
 } as const;
 
 export default function FeedPage() {
-  const { myMajor, majorOnly, setMajorOnly } = useRung();
+  const { myMajor, majorOnly, setMajorOnly, exploreMajors } = useRung();
   const [lightbox, setLightbox] = useState<{
     src?: string;
     title: string;
@@ -41,9 +41,9 @@ export default function FeedPage() {
   const updates = useMemo(() => {
     if (!majorOnly) return projectUpdates;
     return projectUpdates.filter((u) =>
-      sameMajorFamily(personById(u.authorId).major, myMajor),
+      sameMajorFamily(personById(u.authorId).major, myMajor, exploreMajors),
     );
-  }, [majorOnly, myMajor]);
+  }, [majorOnly, myMajor, exploreMajors]);
 
   return (
     <div>
