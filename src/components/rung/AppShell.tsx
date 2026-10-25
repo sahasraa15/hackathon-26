@@ -3,162 +3,132 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Briefcase,
+  Building2,
   Clapperboard,
   Compass,
   Home,
-  Layers,
   MessageSquare,
-  Sparkles,
+  Settings,
   Users,
   UserRound,
-  Bell,
-  MessageCircle,
-  ChevronsUp,
-  Coins,
 } from "lucide-react";
 import { useRung } from "@/lib/rung-store";
 import { HelpChat } from "@/components/rung/HelpChat";
+import { Tutorial } from "@/components/rung/Tutorial";
 import { cn } from "@/lib/utils";
-import { BridgeToast } from "@/components/rung/BridgeToast";
 
 const studentTabs = [
   { href: "/", label: "Feed", icon: Home },
   { href: "/reels", label: "Reels", icon: Clapperboard },
   { href: "/match", label: "Match", icon: Compass },
-  { href: "/network", label: "Network", icon: Users },
+  { href: "/network", label: "People", icon: Users },
   { href: "/profile", label: "You", icon: UserRound },
 ] as const;
 
 const proTabs = [
   { href: "/pro", label: "Home", icon: Briefcase },
+  { href: "/pro/sponsors", label: "Sponsors", icon: Building2 },
   { href: "/pro/feedback", label: "Feedback", icon: MessageSquare },
-  { href: "/pro/ladder", label: "Ladder", icon: ChevronsUp },
-  { href: "/network", label: "Network", icon: Users },
+  { href: "/network", label: "People", icon: Users },
   { href: "/profile", label: "You", icon: UserRound },
 ] as const;
+
+function isPublicPath(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup")
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const {
-    points,
-    tier,
-    session,
-    hydrated,
-    myMajor,
-    credits,
-    myDemos,
-    comments,
-    seenFeedback,
-  } = useRung();
-  const myDemoIds = new Set(myDemos.map((d) => d.id));
-  const unread = comments.filter(
-    (c) => myDemoIds.has(c.demoId) && !seenFeedback.includes(c.id),
-  ).length;
-  const isLogin = pathname.startsWith("/login");
+  const { points, tier, session, hydrated, myMajor, myCollege, contentScope } =
+    useRung();
+  const publicAuth =
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isLanding = pathname === "/" && !session;
   const isReels = pathname.startsWith("/reels");
+  const shellLess = publicAuth || isLanding;
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!session && !isLogin) router.replace("/login");
-    if (session && isLogin) {
+    if (!session && !isPublicPath(pathname)) {
+      router.replace("/");
+      return;
+    }
+    if (session && publicAuth) {
       router.replace(session === "professional" ? "/pro" : "/");
     }
-  }, [hydrated, session, isLogin, router]);
+  }, [hydrated, session, pathname, publicAuth, router]);
 
-  if (isLogin) {
+  if (!hydrated) {
     return (
-      <div className="app-device text-rung-fg">
-        <div className="flex-1 overflow-y-auto overscroll-contain">
-          {children}
-        </div>
+      <div className="app-device app-sunset flex items-center justify-center text-sm font-bold text-rung-mute">
+        Warming up…
       </div>
     );
   }
 
-  if (!hydrated || !session) {
+  if (shellLess) {
+    return <div className="app-device text-rung-fg">{children}</div>;
+  }
+
+  if (!session) {
     return (
-      <div className="app-device flex items-center justify-center text-sm text-rung-mute">
-        Loading…
+      <div className="app-device app-sunset flex items-center justify-center text-sm font-bold text-rung-mute">
+        Warming up…
       </div>
     );
   }
 
   const tabs = session === "professional" ? proTabs : studentTabs;
+  const scopeLabel =
+    contentScope === "major"
+      ? myMajor
+      : contentScope === "campus"
+        ? myCollege
+        : "All";
 
   return (
-    <div className="app-device text-rung-fg">
+    <div className="app-device app-sunset text-rung-fg">
       {!isReels && (
-        <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-black/[0.06] bg-[#fffcf0]/90 px-5 pb-3.5 pt-[max(0.85rem,env(safe-area-inset-top))] backdrop-blur-md sm:pt-14">
+        <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-white/40 bg-[#fbf8ff]/75 px-4 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))] backdrop-blur-xl sm:pt-14">
           <Link
             href={session === "professional" ? "/pro" : "/"}
             className="min-w-0"
           >
-            <p className="text-base font-semibold tracking-tight text-rung-fg">
-              CollegeConnectors
+            <p className="font-display text-[15px] font-extrabold tracking-tight text-rung-fg">
+              College
+              <span className="bg-gradient-to-r from-[#9b6bd6] to-[#2c1f3a] bg-clip-text text-transparent">
+                Connectors
+              </span>
             </p>
-            <p className="mt-0.5 truncate text-[11px] text-rung-mute">
-              {session === "student" ? myMajor : "Pro"} · {tier.name}
+            <p className="mt-0.5 truncate text-[11px] font-bold text-rung-mute">
+              {session === "student" ? scopeLabel : "Mentor"} · {tier.name}
             </p>
           </Link>
           <div className="flex items-center gap-2">
-            <Link
-              href="/tiers"
-              className="flex items-center gap-1 rounded-full border border-black/[0.06] bg-white px-2.5 py-1.5 text-[11px] font-medium text-rung-fg"
-            >
-              <Layers className="size-3.5 text-rung-ember" />
-              {tier.name}
-            </Link>
             {session === "student" && (
-              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-sm">
-                <span className="size-1.5 rounded-full bg-[#e5ccff]" />
-                <span className="font-semibold tabular-nums">{points}</span>
-              </div>
-            )}
-            {session === "professional" && (
-              <Link
-                href="/pro/ladder"
-                className="flex shrink-0 items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-sm"
-                aria-label={`${credits} mentor credits`}
+              <motion.div
+                className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#fff59a] to-[#e4c4ff] px-3 py-1.5 text-xs font-extrabold text-rung-fg shadow-[0_6px_16px_rgba(155,107,214,0.18)]"
+                whileTap={{ scale: 0.96 }}
               >
-                <Coins className="size-3.5 text-rung-ember" />
-                <span className="font-semibold tabular-nums">{credits}</span>
-              </Link>
+                {points}
+                <span className="font-bold text-rung-fg/55">pts</span>
+              </motion.div>
             )}
             <Link
-              href="/chats"
-              className="rounded-full p-1.5 text-rung-mute"
-              aria-label="Messages"
+              href="/settings"
+              className="rounded-full bg-white/80 p-2.5 text-rung-fg shadow-sm ring-1 ring-white"
+              aria-label="Settings"
             >
-              <MessageCircle className="size-4" />
+              <Settings className="size-4" />
             </Link>
-            {session === "student" && (
-              <Link
-                href="/my-projects"
-                className="relative rounded-full p-1.5 text-rung-mute"
-                aria-label={
-                  unread ? `My projects, ${unread} new notes` : "My projects"
-                }
-              >
-                <Bell className="size-4" />
-                {unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-rung-ember text-[9px] font-semibold text-white tabular-nums">
-                    {unread}
-                  </span>
-                )}
-              </Link>
-            )}
-            {session === "student" && (
-              <Link
-                href="/projects"
-                className="rounded-full p-1.5 text-rung-mute"
-                aria-label="Projects"
-              >
-                <Sparkles className="size-4" />
-              </Link>
-            )}
           </div>
         </header>
       )}
@@ -166,25 +136,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "relative flex-1 overscroll-contain",
-          isReels ? "overflow-hidden pb-[4.25rem]" : "overflow-y-auto pb-24",
+          isReels ? "overflow-hidden pb-[4.5rem]" : "overflow-y-auto pb-28",
         )}
       >
         {children}
-        {/* Home pages have the Daily brief assistant instead */}
-        {!isReels && pathname !== "/" && pathname !== "/pro" && <HelpChat />}
+        {!isReels && <HelpChat />}
+        <Tutorial />
       </div>
-
-      <BridgeToast />
 
       <nav
         className={cn(
-          "absolute bottom-0 left-0 right-0 z-40 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5",
-          isReels
-            ? "border-t border-white/10 bg-black/50 backdrop-blur-md"
-            : "border-t border-black/[0.06] bg-[#fffcf0]/95 backdrop-blur-md",
+          "absolute bottom-0 left-0 right-0 z-40 px-3 pb-[max(0.55rem,env(safe-area-inset-bottom))] pt-2",
+          isReels && "border-t border-white/10 bg-black/55 backdrop-blur-xl",
         )}
       >
-        <ul className="grid grid-cols-5">
+        <ul
+          className={cn(
+            "grid grid-cols-5 gap-0.5",
+            !isReels &&
+              "rounded-[1.6rem] bg-white/75 p-1.5 shadow-[0_12px_32px_rgba(80,40,60,0.12)] outline outline-1 outline-white/90 backdrop-blur-xl",
+          )}
+        >
           {tabs.map(({ href, label, icon: Icon }) => {
             const active =
               href === "/" || href === "/pro"
@@ -195,17 +167,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   href={href}
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium",
+                    "flex flex-col items-center gap-0.5 rounded-2xl px-0.5 py-1.5 text-[10px] font-extrabold transition",
                     isReels
                       ? active
                         ? "text-white"
-                        : "text-white/55"
+                        : "text-white/50"
                       : active
-                        ? "text-rung-ember"
+                        ? "text-rung-fg"
                         : "text-rung-mute",
                   )}
                 >
-                  <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
+                  <span
+                    className={cn(
+                      "flex size-9 items-center justify-center rounded-2xl transition",
+                      active &&
+                        !isReels &&
+                        "bg-gradient-to-br from-[#fff59a] to-[#e4c4ff] shadow-sm",
+                      active && isReels && "bg-white/20",
+                    )}
+                  >
+                    <Icon
+                      className="size-[1.15rem]"
+                      strokeWidth={active ? 2.4 : 1.85}
+                    />
+                  </span>
                   {label}
                 </Link>
               </li>

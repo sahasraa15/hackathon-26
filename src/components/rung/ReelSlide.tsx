@@ -10,7 +10,7 @@ import {
   SendHorizontal,
   X,
 } from "lucide-react";
-import { demoAuthor, personById } from "@/lib/rung-data";
+import { personById } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { CsDemoVisual } from "@/components/rung/CsDemoVisual";
@@ -33,7 +33,7 @@ export function ReelSlide({ demoId }: { demoId: string }) {
   const [draft, setDraft] = useState("");
 
   if (!demo) return null;
-  const author = demoAuthor(demo);
+  const author = personById(demo.authorId);
   const thread = comments.filter((c) => c.demoId === demo.id);
   const isLiked = liked.has(demo.id);
   const isRemixed = remixed.has(demo.id);
@@ -187,7 +187,7 @@ export function ReelSlide({ demoId }: { demoId: string }) {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Feedback…"
-                  className="flex-1 rounded-full bg-[#fffcf0] px-4 py-2.5 text-sm outline-none ring-1 ring-black/[0.06]"
+                  className="flex-1 rounded-full bg-[#fffcf5] px-4 py-2.5 text-sm outline-none ring-1 ring-black/[0.06]"
                 />
                 <button
                   type="submit"

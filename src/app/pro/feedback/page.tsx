@@ -1,13 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Play } from "lucide-react";
-import { YOU_ID, demoAuthor, people } from "@/lib/rung-data";
+import { useState } from "react";
+import { people } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
-
-/** Demo ids this tab already reported as viewed, so revisits don't re-count */
-const viewedThisTab = new Set<string>();
 
 export default function ProFeedbackPage() {
   const {
@@ -19,29 +15,7 @@ export default function ProFeedbackPage() {
     you,
     matched,
     swipeMatch,
-    proMajors,
-    notifyDemo,
   } = useRung();
-  const [tried, setTried] = useState<Set<string>>(() => new Set());
-  // Students in the pro's fields first; fall back to everyone if none match
-  const fieldDemos = demos.filter((d) =>
-    proMajors.includes(demoAuthor(d).major ?? ""),
-  );
-  // The student's own demo is pinned first so the live two-window demo works
-  const queue = [
-    ...demos.filter((d) => d.authorId === YOU_ID).reverse(),
-    ...(fieldDemos.length ? fieldDemos : demos).filter(
-      (d) => d.authorId !== YOU_ID,
-    ),
-  ];
-  useEffect(() => {
-    for (const d of demos) {
-      if (d.authorId !== YOU_ID || viewedThisTab.has(d.id)) continue;
-      viewedThisTab.add(d.id);
-      notifyDemo(d.id, "view");
-    }
-  }, [demos, notifyDemo]);
-
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const seniors = people
     .filter(
@@ -78,54 +52,12 @@ export default function ProFeedbackPage() {
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-rung-fg">Queue</h2>
         <ul className="mt-3 space-y-3">
-          {queue.slice(0, 3).map((d) => (
+          {demos.slice(0, 3).map((d) => (
             <li
               key={d.id}
-              className="rounded-2xl border border-black/[0.06] bg-white p-4"
+              className="cc-panel p-4"
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-medium text-rung-fg">{d.title}</p>
-                {d.authorId === YOU_ID && (
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#ffe2c5] px-2 py-0.5 text-[10px] font-semibold text-rung-fg">
-                    <span className="size-1.5 animate-pulse rounded-full bg-[#e2552b]" />
-                    Live
-                  </span>
-                )}
-              </div>
-              <div className="mt-0.5 flex items-center justify-between gap-2">
-                <p className="text-xs text-rung-mute">
-                  {demoAuthor(d).name} · {demoAuthor(d).major}
-                </p>
-                {d.authorId === YOU_ID && (
-                  <button
-                    type="button"
-                    disabled={tried.has(d.id)}
-                    onClick={() => {
-                      setTried((prev) => new Set(prev).add(d.id));
-                      notifyDemo(d.id, "try");
-                    }}
-                    className="flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] font-medium text-rung-fg disabled:opacity-50"
-                  >
-                    <Play className="size-3" />
-                    {tried.has(d.id) ? "Tried" : "Try prototype"}
-                  </button>
-                )}
-              </div>
-              {d.caption && (
-                <p className="mt-2 text-xs leading-snug text-rung-mute">
-                  {d.caption}
-                </p>
-              )}
-              {d.link && (
-                <a
-                  href={d.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 inline-block text-xs font-medium text-rung-ember"
-                >
-                  Open demo ↗
-                </a>
-              )}
+              <p className="font-medium text-rung-fg">{d.title}</p>
               <form
                 className="mt-3 flex gap-2"
                 onSubmit={(e) => {
@@ -140,7 +72,7 @@ export default function ProFeedbackPage() {
                     setDrafts((prev) => ({ ...prev, [d.id]: e.target.value }))
                   }
                   placeholder="Note…"
-                  className="flex-1 rounded-full bg-[#fffcf0] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
+                  className="flex-1 rounded-full bg-[#fffcf5] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
                 />
                 <button
                   type="submit"
@@ -160,7 +92,7 @@ export default function ProFeedbackPage() {
           {seniors.map((p) => (
             <li
               key={p.id}
-              className="flex items-center gap-3 rounded-2xl border border-black/[0.06] bg-white px-3 py-3"
+              className="flex items-center gap-3 cc-panel px-3 py-3"
             >
               <Avatar initials={p.avatar} role={p.role} />
               <div className="min-w-0 flex-1">
@@ -188,7 +120,7 @@ export default function ProFeedbackPage() {
           {mentees.map((p) => (
             <li
               key={p.id}
-              className="flex items-center gap-3 rounded-2xl border border-black/[0.06] bg-white px-3 py-3"
+              className="flex items-center gap-3 cc-panel px-3 py-3"
             >
               <Avatar initials={p.avatar} role={p.role} />
               <div className="min-w-0 flex-1">
@@ -201,7 +133,7 @@ export default function ProFeedbackPage() {
                 type="button"
                 disabled={matched.includes(p.id)}
                 onClick={() => swipeMatch(`mentee-${p.id}`, p.id)}
-                className="rounded-full bg-[#ffe2c5] px-2.5 py-1 text-[11px] font-semibold disabled:opacity-50"
+                className="rounded-full bg-[#f0e0ff] px-2.5 py-1 text-[11px] font-semibold disabled:opacity-50"
               >
                 {matched.includes(p.id) ? "Done" : "Offer"}
               </button>

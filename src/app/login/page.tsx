@@ -2,113 +2,88 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Briefcase, GraduationCap, Zap } from "lucide-react";
-import { useRung, type SignupProfile } from "@/lib/rung-store";
+import { motion } from "framer-motion";
+import { useRung } from "@/lib/rung-store";
 
-/** One-tap demo personas so nobody types an email in front of judges */
-const demoStudent: SignupProfile = {
-  name: "Alex Kim",
-  email: "alex.kim@osu.edu",
-  college: "Ohio State",
-  major: "Biology",
-  exploreMajors: ["CSE", "Public Health"],
-  demo: true,
-};
-
-const demoPro: SignupProfile = {
-  name: "Jordan Hale",
-  email: "jordan.hale@google.com",
-  profession: "People ops",
-  company: "Google",
-  proFields: ["science", "tech"],
-  level: 2,
-};
-
-function resetDemo() {
-  try {
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith("cc-"))
-      .forEach((k) => localStorage.removeItem(k));
-    sessionStorage.clear();
-  } catch {
-    /* ignore */
-  }
-  window.location.href = "/login";
-}
-
-export default function LoginChooserPage() {
+export default function LoginPage() {
   const { login } = useRung();
   const router = useRouter();
 
   return (
-    <div className="flex min-h-full flex-col justify-center px-6 py-10 sm:pt-16">
-      <p className="text-sm font-semibold text-rung-fg">CollegeConnectors</p>
-      <h1 className="mt-3 text-2xl font-semibold tracking-tight text-rung-fg">
-        Who are you?
-      </h1>
+    <div className="app-sunset relative flex min-h-full flex-col overflow-hidden px-6 pb-10 pt-[max(3rem,env(safe-area-inset-top))] sm:pt-14">
+      <div className="pointer-events-none absolute -right-10 top-20 size-40 rounded-full bg-[#e4c4ff]/60 blur-3xl" />
+      <div className="pointer-events-none absolute -left-8 bottom-32 size-44 rounded-full bg-[#fff59a]/70 blur-3xl" />
 
-      <div className="mt-8 space-y-3">
-        <Link
-          href="/login/student"
-          className="flex items-center gap-4 rounded-2xl border border-black/[0.06] bg-white p-5 active:bg-[#f6efff]"
-        >
-          <span className="flex size-11 items-center justify-center rounded-full bg-[#e5ccff]">
-            <GraduationCap className="size-5 text-rung-fg" />
-          </span>
-          <span className="font-semibold text-rung-fg">Student</span>
-        </Link>
-
-        <Link
-          href="/login/professional"
-          className="flex items-center gap-4 rounded-2xl border border-black/[0.06] bg-white p-5 active:bg-[#fff4e8]"
-        >
-          <span className="flex size-11 items-center justify-center rounded-full bg-[#ffe2c5]">
-            <Briefcase className="size-5 text-rung-fg" />
-          </span>
-          <span className="font-semibold text-rung-fg">Professional</span>
-        </Link>
-      </div>
-
-      <div className="mt-10 rounded-2xl border border-dashed border-black/[0.12] p-4">
-        <p className="flex items-center gap-1.5 text-xs font-medium text-rung-mute">
-          <Zap className="size-3.5" />
-          Quick demo
-        </p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              login("student", demoStudent);
-              router.push("/");
-            }}
-            className="rounded-full bg-[#e5ccff] py-2.5 text-xs font-semibold text-rung-fg"
-          >
-            Alex · student
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              login("professional", demoPro);
-              router.push("/pro/feedback");
-            }}
-            className="rounded-full bg-[#ffe2c5] py-2.5 text-xs font-semibold text-rung-fg"
-          >
-            Jordan · pro
-          </button>
-        </div>
-        <p className="mt-3 text-[11px] leading-snug text-rung-mute">
-          Tip: open Alex and Jordan in two windows side by side. Feedback Jordan
-          sends lands on Alex&apos;s screen live.
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onClick={resetDemo}
-        className="mt-6 self-center text-[11px] text-rung-mute underline underline-offset-2 opacity-60"
+      <Link
+        href="/"
+        className="relative z-10 text-sm font-bold text-rung-mute"
       >
-        Reset demo
-      </button>
+        ← Back
+      </Link>
+
+      <motion.h1
+        className="relative z-10 mt-8 font-display text-4xl font-extrabold tracking-tight text-rung-fg"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        Jump back in
+      </motion.h1>
+      <p className="relative z-10 mt-2 text-sm font-semibold text-rung-mute">
+        Demo mode — pick a vibe. New?{" "}
+        <Link href="/signup" className="text-rung-ember underline-offset-2 hover:underline">
+          Sign up
+        </Link>
+      </p>
+
+      <div className="relative z-10 mt-10 space-y-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          onClick={() => {
+            login("student");
+            router.push("/");
+          }}
+          className="w-full overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#fff59a] via-[#f0e0ff] to-[#e4c4ff] p-[2px] text-left shadow-[0_14px_36px_rgba(155,107,214,0.22)] active:scale-[0.98]"
+        >
+          <div className="rounded-[1.5rem] bg-white/55 p-5 backdrop-blur-md">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-rung-ember">
+              Student
+            </p>
+            <p className="mt-1 font-display text-xl font-bold text-rung-fg">
+              Alex · builder mode
+            </p>
+            <p className="mt-1 text-sm font-semibold text-rung-mute">
+              Feed, reels, match, portfolio score
+            </p>
+          </div>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.18 }}
+          onClick={() => {
+            login("professional");
+            router.push("/pro");
+          }}
+          className="w-full overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#e4c4ff] via-[#f0e0ff] to-[#fff59a] p-[2px] text-left shadow-[0_14px_36px_rgba(155,107,214,0.22)] active:scale-[0.98]"
+        >
+          <div className="rounded-[1.5rem] bg-white/55 p-5 backdrop-blur-md">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#9b6bd6]">
+              Mentor
+            </p>
+            <p className="mt-1 font-display text-xl font-bold text-rung-fg">
+              Jordan · industry
+            </p>
+            <p className="mt-1 text-sm font-semibold text-rung-mute">
+              Feedback mins, mentees, sponsor briefs
+            </p>
+          </div>
+        </motion.button>
+      </div>
     </div>
   );
 }

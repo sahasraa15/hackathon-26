@@ -147,7 +147,7 @@ export function HelpChat() {
                   className={
                     m.role === "you"
                       ? "ml-6 rounded-2xl bg-[#e5ccff] px-3 py-2 text-sm text-rung-fg"
-                      : "mr-4 rounded-2xl bg-[#fffcf0] px-3 py-2 text-sm text-rung-fg"
+                      : "mr-4 rounded-2xl bg-[#fffcf5] px-3 py-2 text-sm text-rung-fg"
                   }
                 >
                   {m.text}
@@ -183,7 +183,7 @@ export function HelpChat() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Ask anything…"
-                  className="flex-1 rounded-full bg-[#fffcf0] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06] focus:ring-[#e5ccff]"
+                  className="flex-1 rounded-full bg-[#fffcf5] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06] focus:ring-[#e5ccff]"
                 />
                 <button
                   type="submit"

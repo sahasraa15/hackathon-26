@@ -6,8 +6,9 @@
 
 @theme inline {
   --font-sans: var(--font-body);
-  --font-display: var(--font-body);
+  --font-display: var(--font-display-face), var(--font-body), system-ui;
   --font-body: var(--font-body);
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
   --color-rung-bg: var(--rung-bg);
   --color-rung-fg: var(--rung-fg);
   --color-rung-panel: var(--rung-panel);
@@ -16,28 +17,32 @@
   --color-rung-mint: var(--rung-mint);
   --color-rung-peach: var(--rung-peach);
   --color-rung-lav: var(--rung-lav);
+  --color-rung-butter: var(--rung-butter);
+  --color-rung-sun: var(--rung-sun);
   --color-background: var(--rung-bg);
   --color-foreground: var(--rung-fg);
   --color-primary: var(--rung-ember);
   --color-primary-foreground: #fff;
-  --color-border: rgb(60 45 90 / 0.08);
-  --radius-lg: 1rem;
+  --color-border: rgb(80 55 40 / 0.1);
+  --radius-lg: 1.25rem;
 }
 
 :root {
-  /* Palette used sparingly — surfaces stay calm */
-  --butter: #ffffc5;
-  --lav: #e5ccff;
-  --peach: #ffe2c5;
+  --butter: #fff59a;
+  --lav: #e4c4ff;
+  --peach: #f3e8ff;
+  --sun: #e4c4ff;
 
-  --rung-bg: #fffcf0;
+  --rung-bg: #fbf8ff;
   --rung-panel: #ffffff;
-  --rung-peach: #fff4e8;
-  --rung-lav: #f6efff;
-  --rung-fg: #2a2438;
-  --rung-mute: #7a738a;
-  --rung-ember: #6b4db8;
-  --rung-mint: #c9a86a;
+  --rung-peach: #f3e8ff;
+  --rung-lav: #f0e0ff;
+  --rung-butter: #fff59a;
+  --rung-sun: #e4c4ff;
+  --rung-fg: #2c1f3a;
+  --rung-mute: #8a7a90;
+  --rung-ember: #9b6bd6;
+  --rung-mint: #fff59a;
 }
 
 @layer base {
@@ -47,7 +52,7 @@
   }
 
   html {
-    background: #1e1a28;
+    background: #241828;
     color: var(--rung-fg);
     overscroll-behavior: none;
   }
@@ -57,7 +62,7 @@
     overscroll-behavior: none;
     user-select: none;
     font-family: var(--font-body), system-ui, sans-serif;
-    background: #1e1a28;
+    background: #241828;
   }
 
   input,
@@ -74,7 +79,95 @@
   }
 }
 
-/* iPhone 17 Pro — 402 × 874 */
+.app-sunset {
+  background:
+    radial-gradient(ellipse 100% 70% at 0% 0%, #fff59a 0%, transparent 52%),
+    radial-gradient(ellipse 90% 60% at 100% 5%, #e4c4ff 0%, transparent 48%),
+    radial-gradient(ellipse 80% 50% at 80% 100%, #f0e0ff 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 20% 90%, #fff59a 0%, transparent 55%),
+    linear-gradient(165deg, #fffcf5 0%, #f8f0ff 50%, #fbf8ff 100%);
+}
+
+/* Shared interior surfaces — match Landing glass language */
+.cc-panel {
+  border-radius: 1.75rem;
+  background: rgb(255 255 255 / 0.72);
+  box-shadow: 0 14px 40px rgb(80 40 60 / 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  outline: 1px solid rgb(255 255 255 / 0.85);
+}
+
+.cc-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9b6bd6;
+}
+
+.cc-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--rung-fg);
+}
+
+.cc-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: #2c1f3a;
+  color: #fff59a;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0.65rem 1rem;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-6deg);
+  }
+  50% {
+    transform: translate(6px, -8px) rotate(-2deg);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.anim-float {
+  animation: float-y 4.5s ease-in-out infinite;
+}
+
+.anim-drift {
+  animation: drift 6s ease-in-out infinite;
+}
+
+.anim-pulse-soft {
+  animation: pulse-soft 3.2s ease-in-out infinite;
+}
+
 .app-device {
   position: relative;
   display: flex;
@@ -100,9 +193,9 @@
     max-height: 874px;
     border-radius: 3.15rem;
     box-shadow:
-      0 0 0 10px #14111c,
-      0 0 0 11px #3a3348,
-      0 24px 64px rgb(0 0 0 / 0.45);
+      0 0 0 10px #1a1220,
+      0 0 0 12px #5a4068,
+      0 28px 70px rgb(0 0 0 / 0.5);
   }
 
   .app-device::before {
@@ -115,6 +208,6 @@
     width: 126px;
     translate: -50% 0;
     border-radius: 999px;
-    background: #14111c;
+    background: #1a1220;
   }
 }

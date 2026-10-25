@@ -1,52 +1,59 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { scoreGithubRepos, type GhRepo } from "@/lib/github-score";
 
-/**
- * Score a public GitHub profile by username — no OAuth app needed.
- * Uses GitHub's unauthenticated REST API (public repos only, 60 req/hr/IP).
- */
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
-  const login = (url.searchParams.get("login") ?? "").trim().replace(/^@/, "");
+const ghHeaders = {
+  Accept: "application/vnd.github+json",
+  "User-Agent": "CollegeConnectors-HackOHIO",
+  "X-GitHub-Api-Version": "2022-11-28",
+};
 
-  const back = (params: Record<string, string>) => {
-    const dest = new URL("/profile", origin);
-    for (const [k, v] of Object.entries(params)) dest.searchParams.set(k, v);
-    return NextResponse.redirect(dest);
-  };
-
-  if (!/^[a-z\d](?:[a-z\d-]{0,38})$/i.test(login)) {
-    return back({ gh_error: "Enter a valid GitHub username." });
+/** Score a public GitHub username — no OAuth required (hackathon-friendly). */
+export async function POST(request: Request) {
+  let login = "";
+  try {
+    const body = (await request.json()) as { login?: string };
+    login = (body.login || "").trim().replace(/^@/, "");
+  } catch {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const headers = {
-    Accept: "application/vnd.github+json",
-    "User-Agent": "CollegeConnectors",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
+  if (!login || !/^[a-zA-Z0-9-]{1,39}$/.test(login)) {
+    return NextResponse.json({ error: "Enter a valid GitHub username" }, { status: 400 });
+  }
 
-  const userRes = await fetch(`https://api.github.com/users/${login}`, { headers });
-  if (userRes.status === 404) return back({ gh_error: `No GitHub user “${login}”.` });
+  const userRes = await fetch(`https://api.github.com/users/${login}`, {
+    headers: ghHeaders,
+    next: { revalidate: 0 },
+  });
+
+  if (userRes.status === 404) {
+    return NextResponse.json({ error: `No GitHub user “${login}”` }, { status: 404 });
+  }
+  if (userRes.status === 403) {
+    return NextResponse.json(
+      { error: "GitHub rate limit hit — try again in a minute" },
+      { status: 429 },
+    );
+  }
   if (!userRes.ok) {
-    return back({
-      gh_error:
-        userRes.status === 403
-          ? "GitHub rate limit hit. Try again in a few minutes."
-          : "Could not reach GitHub.",
-    });
+    return NextResponse.json({ error: "Could not load GitHub user" }, { status: 502 });
   }
+
   const user = (await userRes.json()) as { login: string; name?: string | null };
 
   const reposRes = await fetch(
     `https://api.github.com/users/${login}/repos?per_page=100&sort=updated&type=owner`,
-    { headers },
+    { headers: ghHeaders, next: { revalidate: 0 } },
   );
-  if (!reposRes.ok) return back({ gh_error: "Could not load repositories." });
-  const breakdown = scoreGithubRepos((await reposRes.json()) as GhRepo[]);
 
-  const payload = {
+  if (!reposRes.ok) {
+    return NextResponse.json({ error: "Could not load repositories" }, { status: 502 });
+  }
+
+  const repos = (await reposRes.json()) as GhRepo[];
+  const breakdown = scoreGithubRepos(repos);
+
+  return NextResponse.json({
     login: user.login,
     name: user.name ?? null,
     score: breakdown.score,
@@ -56,16 +63,6 @@ export async function GET(request: Request) {
     highlights: breakdown.highlights,
     factors: breakdown.factors,
     scoredAt: Date.now(),
-  };
-
-  const cookieStore = await cookies();
-  cookieStore.set("cc_gh_profile", JSON.stringify(payload), {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    mode: "public",
   });
-
-  return back({ gh: "connected" });
 }

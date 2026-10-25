@@ -117,7 +117,7 @@ export default function ProjectsPage() {
                 {p.tags.map((t) => (
                   <span
                     key={t}
-                    className="rounded-full bg-[#fffcf0] px-2 py-0.5 text-[11px] text-rung-mute"
+                    className="rounded-full bg-[#fffcf5] px-2 py-0.5 text-[11px] text-rung-mute"
                   >
                     {t}
                   </span>

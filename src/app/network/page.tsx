@@ -14,7 +14,6 @@ import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { HotspotProject } from "@/components/rung/HotspotProject";
 import { cn } from "@/lib/utils";
-import { ProNetwork } from "@/components/rung/ProNetwork";
 
 export default function NetworkPage() {
   const {
@@ -28,7 +27,6 @@ export default function NetworkPage() {
     setQuestion,
     myMajor,
     majorOnly,
-    exploreMajors,
   } = useRung();
   const [dmTo, setDmTo] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -54,23 +52,24 @@ export default function NetworkPage() {
       matchCards.filter((c) => {
         if (!c.projectImage || !c.hotspots?.length) return false;
         const p = personById(c.personId);
-        if (collegeFilter !== "all" && p.college !== collegeFilter) {
+        if (
+          collegeFilter !== "all" &&
+          p.college !== collegeFilter
+        ) {
           return false;
         }
-        if (majorOnly && !sameMajorFamily(p.major, myMajor, exploreMajors))
-          return false;
+        if (majorOnly && !sameMajorFamily(p.major, myMajor)) return false;
         return true;
       }),
-    [collegeFilter, majorOnly, myMajor, exploreMajors],
+    [collegeFilter, majorOnly, myMajor],
   );
-
-  if (session === "professional") return <ProNetwork />;
 
   return (
     <div className="px-5 pt-4 pb-10">
-      <h1 className="text-xl font-semibold tracking-tight text-rung-fg">
-        People
-      </h1>
+      <div className="cc-panel p-4">
+        <p className="cc-eyebrow">Campus graph</p>
+        <h1 className="cc-title mt-1 text-2xl">People</h1>
+      </div>
 
       <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-none">
         <Chip
@@ -90,10 +89,10 @@ export default function NetworkPage() {
 
       {hotspotPeople.length > 0 && (
         <section className="mt-6">
-          <h2 className="text-sm font-semibold text-rung-fg">
+          <h2 className="text-sm font-extrabold text-rung-fg">
             Project walkthroughs
           </h2>
-          <p className="mt-0.5 text-xs text-rung-mute">
+          <p className="mt-0.5 text-xs font-semibold text-rung-mute">
             Tap glowing dots · draft a DM from a hotspot
           </p>
           <ul className="mt-3 space-y-3">
@@ -101,13 +100,12 @@ export default function NetworkPage() {
               const p = personById(card.personId);
               const open = expanded === card.personId;
               return (
-                <li
-                  key={card.id}
-                  className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white"
-                >
+                <li key={card.id} className="cc-panel overflow-hidden">
                   <button
                     type="button"
-                    onClick={() => setExpanded(open ? null : card.personId)}
+                    onClick={() =>
+                      setExpanded(open ? null : card.personId)
+                    }
                     className="flex w-full items-center gap-3 px-3 py-3 text-left"
                   >
                     <Avatar initials={p.avatar} role={p.role} />
@@ -148,7 +146,7 @@ export default function NetworkPage() {
                           <input
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
-                            className="flex-1 rounded-full bg-[#fffcf0] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
+                            className="flex-1 rounded-full bg-[#fffcf5] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
                           />
                           <button
                             type="submit"
@@ -207,7 +205,7 @@ export default function NetworkPage() {
             {research.map((r) => (
               <li
                 key={r.id}
-                className="rounded-2xl border border-black/[0.06] bg-white p-4"
+                className="cc-panel p-4"
               >
                 <p className="text-xs text-rung-ember">{r.lab}</p>
                 <p className="mt-0.5 font-semibold text-rung-fg">{r.title}</p>
@@ -225,7 +223,7 @@ export default function NetworkPage() {
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       placeholder="Hi…"
-                      className="flex-1 rounded-full bg-[#fffcf0] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
+                      className="flex-1 rounded-full bg-[#fffcf5] px-3 py-2 text-sm outline-none ring-1 ring-black/[0.06]"
                       autoFocus
                     />
                     <button
@@ -273,10 +271,10 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
+        "shrink-0 rounded-full px-3 py-1.5 text-xs font-extrabold",
         active
-          ? "bg-[#e5ccff] text-rung-fg"
-          : "bg-white text-rung-mute ring-1 ring-black/[0.06]",
+          ? "bg-gradient-to-r from-[#fff59a] to-[#e4c4ff] text-rung-fg"
+          : "bg-white/70 text-rung-mute ring-1 ring-[#2c1f3a]/08",
       )}
     >
       {label}
@@ -303,12 +301,12 @@ function PersonRow({
         type="button"
         onClick={onOpen}
         disabled={!onOpen}
-        className="flex w-full items-center gap-3 rounded-2xl border border-black/[0.06] bg-white px-3 py-3 text-left disabled:cursor-default"
+        className="cc-panel flex w-full items-center gap-3 px-3 py-3 text-left disabled:cursor-default"
       >
         <Avatar initials={avatar} role={role} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-rung-fg">{name}</p>
-          <p className="truncate text-xs text-rung-mute">{meta}</p>
+          <p className="truncate text-sm font-extrabold text-rung-fg">{name}</p>
+          <p className="truncate text-xs font-semibold text-rung-mute">{meta}</p>
         </div>
       </button>
     </li>

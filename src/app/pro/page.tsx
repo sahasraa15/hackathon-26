@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Building2, MessageSquare, Users } from "lucide-react";
 import { useRung } from "@/lib/rung-store";
-import { DailyBrief } from "@/components/rung/DailyBrief";
 
 export default function ProHomePage() {
   const { you, feedbackMinsToday, feedbackGoalMins } = useRung();
@@ -14,33 +13,42 @@ export default function ProHomePage() {
 
   return (
     <div className="px-5 pt-4 pb-10">
-      <h1 className="text-xl font-semibold tracking-tight text-rung-fg">
-        Hi, {you.name.split(" ")[0]}
-      </h1>
-      <p className="mt-1 text-sm text-rung-mute">
-        {[you.workforceRole, you.company].filter(Boolean).join(" · ")}
-      </p>
-
-      <div className="mt-5">
-        <DailyBrief />
+      <div className="cc-panel relative overflow-hidden p-4">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-[#fff59a]/50 blur-2xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-10 -left-6 size-28 rounded-full bg-[#e4c4ff]/45 blur-2xl"
+        />
+        <div className="relative">
+          <p className="cc-eyebrow">Mentor desk</p>
+          <h1 className="cc-title mt-1 text-2xl">
+            Hi, {you.name.split(" ")[0]}
+          </h1>
+          <p className="mt-1 text-sm font-semibold text-rung-mute">
+            {you.company} · {you.college} alum
+          </p>
+        </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-black/[0.06] bg-white p-4">
+      <div className="cc-panel mt-4 p-4">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-xs text-rung-mute">Today</p>
-            <p className="mt-0.5 text-3xl font-semibold tabular-nums text-rung-fg">
+            <p className="cc-eyebrow">Today</p>
+            <p className="cc-title mt-0.5 text-3xl tabular-nums">
               {feedbackMinsToday}
-              <span className="text-base font-normal text-rung-mute">
+              <span className="text-base font-bold text-rung-mute">
                 /{feedbackGoalMins}m
               </span>
             </p>
           </div>
-          <p className="text-xs font-medium text-rung-ember">→ bonus</p>
+          <p className="text-xs font-extrabold text-rung-ember">→ bonus</p>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#2c1f3a]/08">
           <div
-            className="h-full rounded-full bg-[#e5ccff]"
+            className="h-full rounded-full bg-gradient-to-r from-[#fff59a] to-[#e4c4ff]"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -49,24 +57,30 @@ export default function ProHomePage() {
       <div className="mt-4 grid grid-cols-3 gap-2">
         <Link
           href="/pro/feedback"
-          className="flex flex-col items-center gap-2 rounded-2xl border border-black/[0.06] bg-white px-2 py-4"
+          className="cc-panel flex flex-col items-center gap-2 px-2 py-4"
         >
-          <MessageSquare className="size-5 text-rung-ember" />
-          <span className="text-xs font-semibold text-rung-fg">Feedback</span>
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff59a] to-[#e4c4ff]">
+            <MessageSquare className="size-5 text-rung-fg" />
+          </span>
+          <span className="text-xs font-extrabold text-rung-fg">Feedback</span>
         </Link>
         <Link
           href="/pro/sponsors"
-          className="flex flex-col items-center gap-2 rounded-2xl border border-black/[0.06] bg-white px-2 py-4"
+          className="cc-panel flex flex-col items-center gap-2 px-2 py-4"
         >
-          <Building2 className="size-5 text-rung-ember" />
-          <span className="text-xs font-semibold text-rung-fg">Sponsors</span>
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#e4c4ff] to-[#fff59a]">
+            <Building2 className="size-5 text-rung-fg" />
+          </span>
+          <span className="text-xs font-extrabold text-rung-fg">Sponsors</span>
         </Link>
         <Link
           href="/network"
-          className="flex flex-col items-center gap-2 rounded-2xl border border-black/[0.06] bg-white px-2 py-4"
+          className="cc-panel flex flex-col items-center gap-2 px-2 py-4"
         >
-          <Users className="size-5 text-rung-ember" />
-          <span className="text-xs font-semibold text-rung-fg">People</span>
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff59a] to-[#f0e0ff]">
+            <Users className="size-5 text-rung-fg" />
+          </span>
+          <span className="text-xs font-extrabold text-rung-fg">People</span>
         </Link>
       </div>
     </div>

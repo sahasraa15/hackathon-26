@@ -11,7 +11,9 @@ import {
 import { Heart, RotateCcw, X } from "lucide-react";
 import {
   buildMatchDeck,
+  matchCards,
   personById,
+  passesViewerFilter,
   type MatchCard,
 } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
@@ -24,8 +26,8 @@ export default function MatchPage() {
     swipeMatch,
     matched,
     myMajor,
-    majorOnly,
-    exploreMajors,
+    myCollege,
+    contentScope,
     sendMessage,
     setQuestion,
   } = useRung();
@@ -35,16 +37,24 @@ export default function MatchPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [passCount, setPassCount] = useState(0);
 
-  // Rebuild when profile major or matched set changes — majorOnly = only that major
   useEffect(() => {
-    setDeck(
-      buildMatchDeck(myMajor, matched, {
-        allMajors: !majorOnly,
-        alsoExplore: exploreMajors,
-      }),
-    );
+    const base =
+      contentScope === "all"
+        ? buildMatchDeck(myMajor, matched, { allMajors: true })
+        : contentScope === "campus"
+          ? matchCards.filter(
+              (c) =>
+                !matched.includes(c.personId) &&
+                passesViewerFilter(personById(c.personId), {
+                  contentScope,
+                  myMajor,
+                  myCollege,
+                }),
+            )
+          : buildMatchDeck(myMajor, matched, { allMajors: false });
+    setDeck(base);
     setReady(true);
-  }, [myMajor, majorOnly, matched, exploreMajors]);
+  }, [myMajor, myCollege, contentScope, matched]);
 
   const card = deck[0];
   const upcoming = deck.slice(1, 3);
@@ -90,22 +100,13 @@ export default function MatchPage() {
   }
 
   function reshuffle() {
-    const arr = [
-      ...buildMatchDeck(myMajor, matched, {
-        allMajors: !majorOnly,
-        alsoExplore: exploreMajors,
-      }),
-    ];
+    const arr = [...deck];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     setDeck(arr);
-    setToast(
-      majorOnly
-        ? `Shuffled · ${myMajor} only`
-        : "Shuffled · all majors",
-    );
+    setToast("Shuffled");
     window.setTimeout(() => setToast(null), 1800);
   }
 
@@ -121,46 +122,42 @@ export default function MatchPage() {
 
   return (
     <div className="flex min-h-[calc(100%-1rem)] flex-col px-5 pt-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="cc-panel flex items-start justify-between gap-3 p-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-rung-fg">
-            Match
-          </h1>
-          <p className="mt-1 text-sm text-rung-mute">
-            {majorOnly ? myMajor : "All majors"} · {deck.length} in circulation
+          <p className="cc-eyebrow">Find builders</p>
+          <h1 className="cc-title mt-1 text-2xl">Match</h1>
+          <p className="mt-1 text-sm font-semibold text-rung-mute">
+            {deck.length} people cycling · pass = later
           </p>
         </div>
         <button
           type="button"
           onClick={reshuffle}
-          className="flex items-center gap-1.5 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-[11px] font-semibold text-rung-mute"
+          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#fff59a] to-[#e4c4ff] px-3 py-1.5 text-[11px] font-extrabold text-rung-fg shadow-sm"
         >
           <RotateCcw className="size-3.5" />
           Shuffle
         </button>
       </div>
 
-      <p className="mt-1 text-xs text-rung-mute">
-        {majorOnly
-          ? `Only ${myMajor} — change major in Profile.`
-          : "Showing every major. Turn on “My major” in Profile to filter."}{" "}
-        Pass sends them to the back.
+      <p className="mt-3 text-xs font-semibold text-rung-mute">
+        Filter follows Settings → What I see. Heart to connect.
       </p>
 
       {connected.length > 0 && (
-        <div className="mt-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-rung-mute">
-            Connected
-          </p>
-          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="cc-panel mt-4 p-3.5">
+          <p className="cc-eyebrow">Connected</p>
+          <div className="mt-2.5 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {connected.map((p) =>
               p ? (
                 <div
                   key={p.id}
                   className="flex w-14 shrink-0 flex-col items-center gap-1"
                 >
-                  <div className="rounded-full ring-2 ring-[#e5ccff] ring-offset-2 ring-offset-[#fffcf0]">
-                    <Avatar initials={p.avatar} role={p.role} size="sm" />
+                  <div className="rounded-full bg-gradient-to-tr from-[#fff59a] to-[#e4c4ff] p-[2px]">
+                    <div className="rounded-full bg-[#fbf8ff] p-[1.5px]">
+                      <Avatar initials={p.avatar} role={p.role} size="sm" />
+                    </div>
                   </div>
                   <span className="w-full truncate text-center text-[10px] text-rung-mute">
                     {p.name.split(" ")[0]}
@@ -179,7 +176,7 @@ export default function MatchPage() {
               .map((c, i) => (
                 <div
                   key={c.id}
-                  className="absolute inset-0 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm"
+                  className="cc-panel absolute inset-0 overflow-hidden"
                   style={{
                     transform: `scale(${1 - (i + 1) * 0.04}) translateY(${(i + 1) * 10}px)`,
                     zIndex: 10 - i,
@@ -225,16 +222,10 @@ export default function MatchPage() {
             </AnimatePresence>
           </div>
         ) : (
-            <div className="rounded-2xl border border-black/[0.06] bg-white p-8 text-center">
-            <p className="font-semibold text-rung-fg">
-              {majorOnly
-                ? `No more ${myMajor} matches`
-                : "You’re connected"}
-            </p>
+            <div className="cc-panel p-8 text-center">
+            <p className="font-semibold text-rung-fg">Deck quiet for now</p>
             <p className="mt-2 text-sm text-rung-mute">
-              {majorOnly
-                ? "Shuffle, switch major in Profile, or open Network."
-                : "Open Network to keep the conversation going."}
+              Widen your filter in Settings or check People.
             </p>
           </div>
         )}
@@ -311,7 +302,7 @@ function MatchFace({
   const person = personById(card.personId);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm">
+    <div className="cc-panel flex h-full flex-col overflow-hidden">
       <div className="relative shrink-0">
         <motion.span
           style={{ opacity: likeOpacity }}
@@ -347,7 +338,7 @@ function MatchFace({
               person.role === "industry"
                 ? "bg-[#ffffc5]"
                 : person.role === "faculty"
-                  ? "bg-[#ffe2c5]"
+                  ? "bg-[#f0e0ff]"
                   : "bg-[#f6efff]",
             )}
           >
@@ -382,7 +373,7 @@ function MatchFace({
           {card.sharedSkills.map((s) => (
             <span
               key={s}
-              className="rounded-full bg-[#fffcf0] px-2.5 py-1 text-xs text-rung-mute"
+              className="rounded-full bg-[#fffcf5] px-2.5 py-1 text-xs text-rung-mute"
             >
               {s}
             </span>

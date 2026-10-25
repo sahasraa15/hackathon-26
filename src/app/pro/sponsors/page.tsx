@@ -19,7 +19,7 @@ export default function ProSponsorsPage() {
           return (
             <li
               key={s.id}
-              className="rounded-2xl border border-black/[0.06] bg-white p-4"
+              className="cc-panel p-4"
             >
               <p className="text-xs font-semibold text-rung-ember">{s.company}</p>
               <h2 className="mt-1 font-semibold text-rung-fg">{s.title}</h2>
@@ -30,7 +30,7 @@ export default function ProSponsorsPage() {
                 {s.tags.map((t) => (
                   <span
                     key={t}
-                    className="rounded-full bg-[#fffcf0] px-2 py-0.5 text-[11px] text-rung-mute"
+                    className="rounded-full bg-[#fffcf5] px-2 py-0.5 text-[11px] text-rung-mute"
                   >
                     {t}
                   </span>

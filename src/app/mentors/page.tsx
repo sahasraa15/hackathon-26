@@ -60,7 +60,7 @@ export default function MentorsPage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="ROS, resume, scope cuts…"
-          className="mt-2 w-full rounded-xl bg-[#fffcf0] px-3 py-2.5 text-sm outline-none ring-1 ring-black/[0.06] focus:ring-[#e5ccff]"
+          className="mt-2 w-full rounded-xl bg-[#fffcf5] px-3 py-2.5 text-sm outline-none ring-1 ring-black/[0.06] focus:ring-[#e5ccff]"
         />
         {recs.length > 0 && (
           <ul className="mt-3 space-y-2">

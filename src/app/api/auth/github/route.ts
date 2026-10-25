@@ -4,26 +4,16 @@ import { randomBytes } from "crypto";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  // Use the host the browser used; the dev server binds 0.0.0.0, which
-  // would otherwise leak into redirects and land on a different origin.
-  const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
-  // Only same-site paths: "/x" yes, "//evil.com" or "https://…" no
-  const requested = url.searchParams.get("returnTo") ?? "";
-  const returnTo =
-    requested.startsWith("/") && !requested.startsWith("//")
-      ? requested
-      : "/profile";
+  const returnTo = url.searchParams.get("returnTo") || "/profile";
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
-    // Bounce back to the app with a readable error instead of a JSON page
-    const dest = new URL(returnTo, origin);
-    dest.searchParams.set(
-      "gh_error",
-      "GitHub isn't set up yet. Add GITHUB_CLIENT_ID to .env.local (see env.example).",
-    );
+    // Don't dump JSON on the user — send them back with a clear flag.
+    const dest = new URL(returnTo, url.origin);
+    dest.searchParams.set("gh_error", "oauth_not_configured");
     return NextResponse.redirect(dest);
   }
+
   const state = randomBytes(16).toString("hex");
 
   const cookieStore = await cookies();
@@ -44,7 +34,7 @@ export async function GET(request: Request) {
 
   const redirectUri =
     process.env.GITHUB_REDIRECT_URI ||
-    `${origin}/api/auth/github/callback`;
+    `${url.origin}/api/auth/github/callback`;
 
   const auth = new URL("https://github.com/login/oauth/authorize");
   auth.searchParams.set("client_id", clientId);

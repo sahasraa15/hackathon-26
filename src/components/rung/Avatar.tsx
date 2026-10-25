@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 const tones: Record<string, string> = {
   student: "bg-[#e5ccff] text-[#2a2438]",
   faculty: "bg-[#ffffc5] text-[#2a2438] ring-1 ring-black/5",
-  industry: "bg-[#ffe2c5] text-[#2a2438]",
+  industry: "bg-[#f0e0ff] text-[#2a2438]",
 };
 
 export function Avatar({
@@ -28,7 +28,7 @@ export function Avatar({
         size === "md" && "size-10 text-sm",
         size === "lg" && "size-12 text-base",
         size === "xl" && "size-16 text-xl",
-        ring && "ring-2 ring-[#e5ccff] ring-offset-2 ring-offset-[#fffcf0]",
+        ring && "ring-2 ring-[#e5ccff] ring-offset-2 ring-offset-[#fffcf5]",
         className,
       )}
     >

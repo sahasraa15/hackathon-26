@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronUp, X } from "lucide-react";
-import { personById, sameMajorFamily, stories } from "@/lib/rung-data";
+import { personById, passesViewerFilter, stories } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { DeviceOverlay } from "@/components/rung/DeviceOverlay";
@@ -15,18 +15,21 @@ const statusCopy = {
 } as const;
 
 export function StoriesBar() {
-  const { sendMessage, setQuestion, myMajor, majorOnly, exploreMajors } =
+  const { sendMessage, setQuestion, myMajor, myCollege, contentScope } =
     useRung();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [draft, setDraft] = useState("");
 
   const visible = useMemo(() => {
-    if (!majorOnly) return stories;
     return stories.filter((s) =>
-      sameMajorFamily(personById(s.authorId).major, myMajor, exploreMajors),
+      passesViewerFilter(personById(s.authorId), {
+        contentScope,
+        myMajor,
+        myCollege,
+      }),
     );
-  }, [majorOnly, myMajor, exploreMajors]);
+  }, [contentScope, myMajor, myCollege]);
 
   const story = activeIdx != null ? visible[activeIdx] : null;
   const author = story ? personById(story.authorId) : null;
@@ -34,7 +37,7 @@ export function StoriesBar() {
   useEffect(() => {
     setActiveIdx(null);
     setFeedbackOpen(false);
-  }, [myMajor, majorOnly]);
+  }, [myMajor, myCollege, contentScope]);
 
   useEffect(() => {
     if (activeIdx == null || feedbackOpen) return;
@@ -56,7 +59,7 @@ export function StoriesBar() {
   if (visible.length === 0) {
     return (
       <p className="px-5 py-3 text-xs text-rung-mute">
-        No {myMajor} stories right now.
+        No stories for your current filter — change it in Settings.
       </p>
     );
   }
@@ -76,8 +79,8 @@ export function StoriesBar() {
               }}
               className="flex w-14 shrink-0 flex-col items-center gap-1.5"
             >
-              <div className="rounded-full bg-gradient-to-tr from-[#e5ccff] to-[#ffe2c5] p-[2px]">
-                <div className="overflow-hidden rounded-full bg-[#fffcf0] p-[2px]">
+              <div className="rounded-full bg-gradient-to-tr from-[#fff59a] to-[#e4c4ff] p-[2.5px] shadow-[0_4px_12px_rgba(155,107,214,0.18)]">
+                <div className="overflow-hidden rounded-full bg-[#fbf8ff] p-[2px]">
                   {s.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -217,7 +220,7 @@ export function StoriesBar() {
                       onChange={(e) => setDraft(e.target.value)}
                       placeholder="Be specific…"
                       autoFocus
-                      className="mt-2 w-full rounded-xl bg-[#fffcf0] px-3 py-2.5 text-sm text-rung-fg outline-none ring-1 ring-black/[0.06]"
+                      className="mt-2 w-full rounded-xl bg-[#fffcf5] px-3 py-2.5 text-sm text-rung-fg outline-none ring-1 ring-black/[0.06]"
                     />
                     <div className="mt-2 flex gap-2">
                       <button

@@ -69,7 +69,11 @@ export type Project = {
   company?: string;
 };
 
-export type ReelVisual = "cs-hook" | "cs-live" | "cs-code" | "cs-ship";
+export type ReelVisual =
+  | "cs-hook"
+  | "cs-live"
+  | "cs-code"
+  | "cs-ship";
 
 export type Demo = {
   id: string;
@@ -84,16 +88,6 @@ export type Demo = {
   projectId?: string;
   /** Animated in-reel demo canvas (CS product walkthrough) */
   visual?: ReelVisual;
-  /** People who tried the prototype */
-  tries?: number;
-  /** Professionals who opened it */
-  proViews?: number;
-  /** Set on projects students post in the app (author isn't a seeded person) */
-  authorName?: string;
-  authorMajor?: string;
-  ownerEmail?: string;
-  /** Video, GitHub or live demo link */
-  link?: string;
 };
 
 export type Story = {
@@ -134,11 +128,6 @@ export type Comment = {
   authorId: string;
   text: string;
   isFeedback: boolean;
-  /** Set on live notes from another window, whose author may be a new sign-up */
-  fromName?: string;
-  fromTitle?: string;
-  /** ms timestamp, for ordering in chat threads (seeded notes have none) */
-  at?: number;
 };
 
 export type ShopItem = {
@@ -204,319 +193,6 @@ export const majorFamily: Record<string, string[]> = {
 
 export function majorsForFilter(major: string) {
   return majorFamily[major] ?? [major];
-}
-
-/** .edu domains we recognize → college name */
-const collegeDomains: Record<string, (typeof colleges)[number]> = {
-  "osu.edu": "Ohio State",
-  "umich.edu": "Michigan",
-  "purdue.edu": "Purdue",
-  "cmu.edu": "CMU",
-  "illinois.edu": "UIUC",
-};
-
-export function isEduEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.edu$/i.test(email.trim());
-}
-
-/** College from a student email, including subdomains (andrew.cmu.edu). */
-export function collegeFromEmail(email: string) {
-  const domain = email.trim().toLowerCase().split("@")[1] ?? "";
-  const match = Object.keys(collegeDomains).find(
-    (d) => domain === d || domain.endsWith(`.${d}`),
-  );
-  return match ? collegeDomains[match] : null;
-}
-
-/** Fields a professional can pick; each maps to the student majors they see. */
-export const professionFields = [
-  { id: "tech", label: "Software & tech", majors: ["CSE"] },
-  { id: "health", label: "Healthcare", majors: ["Nursing", "Public Health"] },
-  {
-    id: "science",
-    label: "Life sciences",
-    majors: ["Biology", "Microbiology"],
-  },
-  { id: "media", label: "Media & writing", majors: ["Journalism", "English"] },
-  { id: "design", label: "Design", majors: ["Design"] },
-  { id: "business", label: "Business & finance", majors: ["Business"] },
-  { id: "education", label: "Education", majors: ["Education", "Psychology"] },
-  { id: "psych", label: "Psychology", majors: ["Psychology"] },
-  { id: "music", label: "Music & arts", majors: ["Music"] },
-] as const;
-
-export type ProfessionFieldId = (typeof professionFields)[number]["id"];
-
-/** Career rungs used by the pro Ladder */
-export const levels = [
-  { id: 1, label: "Early career" },
-  { id: 2, label: "Mid-level" },
-  { id: 3, label: "Senior" },
-  { id: 4, label: "Leadership" },
-] as const;
-
-export function levelLabel(level: number) {
-  return levels.find((l) => l.id === level)?.label ?? "Mid-level";
-}
-
-/** Sample professionals for the Ladder (separate from the student network) */
-export type LadderPro = {
-  id: string;
-  name: string;
-  avatar: string;
-  title: string;
-  company: string;
-  field: string;
-  level: number;
-  helpfulNotes: number;
-  /** Network role; mentors when unset */
-  kind?: "recruiter" | "enthusiast" | "mentor";
-  /** What they're passionate about outside the day job */
-  passion?: string;
-  /** Recruiters: what they're hiring for */
-  hiringFor?: string;
-};
-
-export const ladderPros: LadderPro[] = [
-  {
-    id: "lp-riya",
-    name: "Riya Shah",
-    avatar: "RS",
-    title: "Clinical scientist",
-    company: "Abbott",
-    field: "science",
-    level: 2,
-    helpfulNotes: 14,
-  },
-  {
-    id: "lp-amit",
-    name: "Amit Rao",
-    avatar: "AR",
-    title: "Software engineer",
-    company: "Honda",
-    field: "tech",
-    level: 2,
-    helpfulNotes: 9,
-  },
-  {
-    id: "lp-marcus",
-    name: "Marcus Webb",
-    avatar: "MW",
-    title: "Community partnerships lead",
-    company: "Honda",
-    field: "business",
-    level: 3,
-    helpfulNotes: 21,
-  },
-  {
-    id: "lp-elena",
-    name: "Elena Ruiz",
-    avatar: "ER",
-    title: "Director of R&D",
-    company: "Abbott",
-    field: "science",
-    level: 4,
-    helpfulNotes: 32,
-  },
-  {
-    id: "lp-tom",
-    name: "Tom Becker",
-    avatar: "TB",
-    title: "Senior research scientist",
-    company: "Battelle",
-    field: "science",
-    level: 3,
-    helpfulNotes: 18,
-  },
-  {
-    id: "lp-hana",
-    name: "Hana Ito",
-    avatar: "HI",
-    title: "Lab associate",
-    company: "Battelle",
-    field: "science",
-    level: 1,
-    helpfulNotes: 3,
-  },
-  {
-    id: "lp-dev",
-    name: "Dev Malhotra",
-    avatar: "DM",
-    title: "Staff engineer",
-    company: "Google",
-    field: "tech",
-    level: 3,
-    helpfulNotes: 26,
-  },
-  {
-    id: "lp-sara",
-    name: "Sara Kim",
-    avatar: "SK",
-    title: "VP Engineering",
-    company: "Root",
-    field: "tech",
-    level: 4,
-    helpfulNotes: 40,
-  },
-  {
-    id: "lp-leo",
-    name: "Leo Grant",
-    avatar: "LG",
-    title: "Junior developer",
-    company: "CoverMyMeds",
-    field: "tech",
-    level: 1,
-    helpfulNotes: 2,
-  },
-  {
-    id: "lp-nora",
-    name: "Nora Haddad",
-    avatar: "NH",
-    title: "Product designer",
-    company: "Google",
-    field: "design",
-    level: 2,
-    helpfulNotes: 11,
-  },
-  {
-    id: "lp-james",
-    name: "James Okafor",
-    avatar: "JO",
-    title: "Nurse manager",
-    company: "OhioHealth",
-    field: "health",
-    level: 3,
-    helpfulNotes: 17,
-  },
-  {
-    id: "lp-mia",
-    name: "Mia Chen",
-    avatar: "MC",
-    title: "Analyst",
-    company: "JPMorgan",
-    field: "business",
-    level: 1,
-    helpfulNotes: 4,
-  },
-];
-
-/** Pro Network directory: Ladder mentors plus recruiters and enthusiasts (sample) */
-export const networkPros: LadderPro[] = [
-  {
-    id: "np-priya",
-    name: "Priya Desai",
-    avatar: "PD",
-    title: "University recruiter",
-    company: "Google",
-    field: "tech",
-    level: 2,
-    helpfulNotes: 6,
-    kind: "recruiter",
-    hiringFor: "SWE interns · summer 2027",
-  },
-  {
-    id: "np-ben",
-    name: "Ben Carter",
-    avatar: "BC",
-    title: "Talent partner, R&D",
-    company: "Abbott",
-    field: "science",
-    level: 3,
-    helpfulNotes: 8,
-    kind: "recruiter",
-    hiringFor: "Lab co-ops · diagnostics",
-  },
-  {
-    id: "np-alicia",
-    name: "Alicia Gomez",
-    avatar: "AG",
-    title: "Campus recruiting lead",
-    company: "JPMorgan",
-    field: "business",
-    level: 3,
-    helpfulNotes: 5,
-    kind: "recruiter",
-    hiringFor: "Analyst program",
-  },
-  {
-    id: "np-kwame",
-    name: "Kwame Mensah",
-    avatar: "KM",
-    title: "Clinical recruiter",
-    company: "OhioHealth",
-    field: "health",
-    level: 2,
-    helpfulNotes: 4,
-    kind: "recruiter",
-    hiringFor: "Nurse residency",
-  },
-  {
-    id: "np-grace",
-    name: "Grace Liu",
-    avatar: "GL",
-    title: "Data scientist",
-    company: "Nationwide",
-    field: "science",
-    level: 2,
-    helpfulNotes: 12,
-    kind: "enthusiast",
-    passion: "Plant genomics side projects; mentors iGEM teams",
-  },
-  {
-    id: "np-omar",
-    name: "Omar Farouk",
-    avatar: "OF",
-    title: "Mechanical engineer",
-    company: "Honda",
-    field: "tech",
-    level: 2,
-    helpfulNotes: 10,
-    kind: "enthusiast",
-    passion: "Runs weekend Arduino workshops",
-  },
-  {
-    id: "np-lena",
-    name: "Lena Park",
-    avatar: "LP",
-    title: "UX researcher",
-    company: "Root",
-    field: "design",
-    level: 2,
-    helpfulNotes: 9,
-    kind: "enthusiast",
-    passion: "Accessibility research, loves student critiques",
-  },
-  {
-    id: "np-sam",
-    name: "Sam Rivera",
-    avatar: "SR",
-    title: "Epidemiologist",
-    company: "Columbus Public Health",
-    field: "health",
-    level: 3,
-    helpfulNotes: 15,
-    kind: "enthusiast",
-    passion: "Community health data storytelling",
-  },
-  ...ladderPros.map((p) => ({ ...p, kind: "mentor" as const })),
-];
-
-/** Feedback minutes this week, for the company leaderboard (sample) */
-export const companyMinutes: { company: string; minutes: number }[] = [
-  { company: "Abbott", minutes: 340 },
-  { company: "Honda", minutes: 295 },
-  { company: "Battelle", minutes: 210 },
-  { company: "Root", minutes: 160 },
-];
-
-export function majorsForFields(fieldIds: string[]): string[] {
-  return [
-    ...new Set(
-      professionFields
-        .filter((f) => fieldIds.includes(f.id))
-        .flatMap((f) => f.majors),
-    ),
-  ];
 }
 
 export const people: Person[] = [
@@ -1019,25 +695,7 @@ export const projects: Project[] = [
   },
 ];
 
-/** Sample project that only the "Alex" demo persona owns */
-export const PERSONA_DEMO_ID = "d-you1";
-
 export const demos: Demo[] = [
-  {
-    // Alex's own demo — pinned in the pro queue for the live demo
-    id: PERSONA_DEMO_ID,
-    authorId: YOU_ID,
-    title: "Leaf stress sensor · first prototype",
-    caption:
-      "A $6 sensor that flags thirsty plants before they wilt. Is the pitch clear?",
-    tags: ["Biology", "hardware", "demo"],
-    likes: 12,
-    remixCount: 1,
-    gradient: "from-[#ffffc5] via-[#f6efff] to-[#e5ccff]",
-    mediaLabel: "Reel · 0:20",
-    tries: 41,
-    proViews: 2,
-  },
   {
     id: "d-cs1",
     authorId: "kai",
@@ -1056,7 +714,8 @@ export const demos: Demo[] = [
     id: "d-cs2",
     authorId: "kai",
     title: "QueueLess · live map",
-    caption: "Halls update every 8s. Tap a building → ETA. Is the UI too busy?",
+    caption:
+      "Halls update every 8s. Tap a building → ETA. Is the UI too busy?",
     tags: ["CSE", "UI", "realtime"],
     likes: 189,
     remixCount: 27,
@@ -1069,7 +728,8 @@ export const demos: Demo[] = [
     id: "d-cs3",
     authorId: "kai",
     title: "QueueLess · the stack",
-    caption: "Next + WS ingest + rolling avg. Where would you cache? Be mean.",
+    caption:
+      "Next + WS ingest + rolling avg. Where would you cache? Be mean.",
     tags: ["CSE", "backend", "code"],
     likes: 156,
     remixCount: 33,
@@ -1082,7 +742,8 @@ export const demos: Demo[] = [
     id: "d-cs4",
     authorId: "kai",
     title: "QueueLess · shipped",
-    caption: "Pilot: 3 halls, −4.2 min avg wait. Remix the model or the UX.",
+    caption:
+      "Pilot: 3 halls, −4.2 min avg wait. Remix the model or the UX.",
     tags: ["CSE", "ship", "metrics"],
     likes: 241,
     remixCount: 41,
@@ -1111,7 +772,7 @@ export const demos: Demo[] = [
     tags: ["design", "story"],
     likes: 86,
     remixCount: 9,
-    gradient: "from-[#ffe2c5] via-[#fff8f0] to-[#ffffc5]",
+    gradient: "from-[#f0e0ff] via-[#fffcf5] to-[#ffffc5]",
     mediaLabel: "Talk · 1:05",
     projectId: "p-demo-story",
   },
@@ -1123,7 +784,7 @@ export const demos: Demo[] = [
     tags: ["nursing", "beginner"],
     likes: 54,
     remixCount: 6,
-    gradient: "from-[#f6efff] via-[#e5ccff] to-[#ffe2c5]",
+    gradient: "from-[#f6efff] via-[#e5ccff] to-[#f0e0ff]",
     mediaLabel: "Notes",
     projectId: "p-first-pr",
   },
@@ -1135,7 +796,7 @@ export const demos: Demo[] = [
     tags: ["public health"],
     likes: 201,
     remixCount: 41,
-    gradient: "from-[#ffffc5] to-[#ffe2c5]",
+    gradient: "from-[#ffffc5] to-[#f0e0ff]",
     mediaLabel: "Results",
   },
   {
@@ -1146,7 +807,7 @@ export const demos: Demo[] = [
     tags: ["journalism"],
     likes: 97,
     remixCount: 3,
-    gradient: "from-[#fff4e8] via-[#ffe2c5] to-[#f6efff]",
+    gradient: "from-[#f6efff] via-[#f0e0ff] to-[#f6efff]",
     mediaLabel: "Reel · 0:45",
     projectId: "p-demo-story",
   },
@@ -1158,8 +819,74 @@ export const demos: Demo[] = [
     tags: ["music"],
     likes: 73,
     remixCount: 5,
-    gradient: "from-[#e5ccff] via-[#ffffc5] to-[#ffe2c5]",
+    gradient: "from-[#e5ccff] via-[#ffffc5] to-[#f0e0ff]",
     mediaLabel: "Audio · 0:50",
+  },
+  {
+    id: "d7",
+    authorId: "priya",
+    title: "Indoor nav model",
+    caption: "Vision demo clip — hallway → room label. Where’s the lag?",
+    tags: ["CSE", "ML"],
+    likes: 112,
+    remixCount: 8,
+    gradient: "from-[#0f172a] via-[#1e3a5f] to-[#e5ccff]",
+    mediaLabel: "Reel · 0:22",
+  },
+  {
+    id: "d8",
+    authorId: "evan",
+    title: "Auth lib README",
+    caption: "60s walkthrough of the API. Too jargon-y?",
+    tags: ["CSE", "docs"],
+    likes: 67,
+    remixCount: 11,
+    gradient: "from-[#14532d] via-[#052e16] to-[#ffffc5]",
+    mediaLabel: "Reel · 0:28",
+  },
+  {
+    id: "d9",
+    authorId: "maya",
+    title: "Figure caption pass",
+    caption: "Before/after captions on the gel. Remix if you write tighter.",
+    tags: ["biology", "figures"],
+    likes: 91,
+    remixCount: 7,
+    gradient: "from-[#f0e0ff] via-[#ffffc5] to-[#f6efff]",
+    mediaLabel: "Reel · 0:18",
+  },
+  {
+    id: "d10",
+    authorId: "hana",
+    title: "CRISPR lit map",
+    caption: "How I clustered 12 papers. Need a co-reader.",
+    tags: ["biology", "lit review"],
+    likes: 58,
+    remixCount: 4,
+    gradient: "from-[#f6efff] via-[#e5ccff] to-[#ffffc5]",
+    mediaLabel: "Talk · 0:35",
+  },
+  {
+    id: "d11",
+    authorId: "sofia",
+    title: "UX flow critique",
+    caption: "Onboarding wire — 4 screens. Be mean about drop-off.",
+    tags: ["design", "UX"],
+    likes: 134,
+    remixCount: 22,
+    gradient: "from-[#fffcf5] via-[#f0e0ff] to-[#e5ccff]",
+    mediaLabel: "Reel · 0:40",
+  },
+  {
+    id: "d12",
+    authorId: "chris",
+    title: "Tutor scheduler MVP",
+    caption: "First-year matching prototype. Who wants to stress-test?",
+    tags: ["education", "build"],
+    likes: 49,
+    remixCount: 6,
+    gradient: "from-[#ffffc5] via-[#f0e0ff] to-[#f6efff]",
+    mediaLabel: "Demo · 0:25",
   },
 ];
 
@@ -1195,6 +922,27 @@ export const projectUpdates: ProjectUpdate[] = [
     hoursAgo: 3,
     tags: ["CSE"],
     posterTone: "from-[#ffffc5] to-[#e5ccff]",
+  },
+  {
+    id: "u0d",
+    authorId: "kai",
+    projectTitle: "QueueLess",
+    kind: "ask",
+    body: "Should ETA cache live at the edge or in-memory? Drop a take on the reel.",
+    hoursAgo: 4,
+    tags: ["CSE"],
+    posterTone: "from-[#e5ccff] to-[#f0e0ff]",
+    reelHref: "/reels",
+  },
+  {
+    id: "u0e",
+    authorId: "tyler",
+    projectTitle: "Case + prototype",
+    kind: "ask",
+    body: "Business case team still needs a CSE teammate for the MVP this weekend.",
+    hoursAgo: 5,
+    tags: ["Business"],
+    posterTone: "from-[#ffffc5] to-[#f0e0ff]",
   },
   {
     id: "u1",
@@ -1234,7 +982,7 @@ export const projectUpdates: ProjectUpdate[] = [
     body: "Hit 40 responses. Cleaning data next.",
     hoursAgo: 3,
     tags: ["Public Health"],
-    posterTone: "from-[#ffe2c5] to-[#ffffc5]",
+    posterTone: "from-[#f0e0ff] to-[#ffffc5]",
   },
   {
     id: "u4",
@@ -1264,7 +1012,7 @@ export const projectUpdates: ProjectUpdate[] = [
     body: "Looking for a design major for our pitch deck.",
     hoursAgo: 6,
     tags: ["Business"],
-    posterTone: "from-[#ffffc5] to-[#ffe2c5]",
+    posterTone: "from-[#ffffc5] to-[#f0e0ff]",
   },
   {
     id: "u7",
@@ -1279,118 +1027,6 @@ export const projectUpdates: ProjectUpdate[] = [
 ];
 
 export const stories: Story[] = [
-  {
-    id: "s-live0",
-    authorId: "hana",
-    text: "PCR came back clean on try #4. Running gels now",
-    status: "building",
-    hoursAgo: 0,
-    image: "/images/stories/lab.jpg",
-  },
-  {
-    id: "s-live1",
-    authorId: "noah",
-    text: "Biofilm time-lapse: 48h in 12 seconds",
-    status: "shipped",
-    hoursAgo: 0,
-    image: "/images/stories/lab.jpg",
-  },
-  {
-    id: "s-live2",
-    authorId: "maya",
-    text: "Stuck: plate counts don't match OD600. Ideas?",
-    status: "stuck",
-    hoursAgo: 1,
-    image: "/images/stories/lab.jpg",
-  },
-  {
-    id: "s-live3",
-    authorId: "hana",
-    text: "Poster draft for undergrad research expo",
-    status: "building",
-    hoursAgo: 2,
-    image: "/images/stories/poster.jpg",
-  },
-  {
-    id: "s-live4",
-    authorId: "kai",
-    text: "Live: QueueLess hit 200 test users",
-    status: "shipped",
-    hoursAgo: 0,
-    image: "/images/stories/queueless.jpg",
-  },
-  {
-    id: "s-live5",
-    authorId: "evan",
-    text: "Refactoring auth at 2am, send help",
-    status: "stuck",
-    hoursAgo: 1,
-    image: "/images/stories/code.jpg",
-  },
-  {
-    id: "s-live6",
-    authorId: "priya",
-    text: "Pairing on the ML pipeline, drop in",
-    status: "building",
-    hoursAgo: 3,
-    image: "/images/stories/code.jpg",
-  },
-  {
-    id: "s-live7",
-    authorId: "aisha",
-    text: "Survey closes tonight: 300 responses so far",
-    status: "building",
-    hoursAgo: 1,
-    image: "/images/stories/careplan.jpg",
-  },
-  {
-    id: "s-live8",
-    authorId: "jade",
-    text: "Heat map of campus clinic wait times",
-    status: "shipped",
-    hoursAgo: 4,
-    image: "/images/stories/poster.jpg",
-  },
-  {
-    id: "s-live9",
-    authorId: "sam",
-    text: "Sim lab day: care plan feedback welcome",
-    status: "building",
-    hoursAgo: 2,
-    image: "/images/stories/careplan.jpg",
-  },
-  {
-    id: "s-live10",
-    authorId: "sofia",
-    text: "New logo options for the club, vote",
-    status: "stuck",
-    hoursAgo: 3,
-    image: "/images/stories/design.jpg",
-  },
-  {
-    id: "s-live11",
-    authorId: "zoe",
-    text: "Pilot study recruiting: 10 min, +1 coffee",
-    status: "building",
-    hoursAgo: 5,
-    image: "/images/stories/poster.jpg",
-  },
-  {
-    id: "s-live12",
-    authorId: "omar",
-    text: "Pitch deck v3, roast slide 4",
-    status: "stuck",
-    hoursAgo: 2,
-    image: "/images/stories/design.jpg",
-  },
-  {
-    id: "s-live13",
-    authorId: "lena",
-    text: "Story on student housing goes live tomorrow",
-    status: "shipped",
-    hoursAgo: 6,
-    image: "/images/stories/poster.jpg",
-  },
   {
     id: "s0",
     authorId: "kai",
@@ -1458,20 +1094,6 @@ export const stories: Story[] = [
 ];
 
 export const comments: Comment[] = [
-  {
-    id: "c-you1",
-    demoId: "d-you1",
-    authorId: "riya",
-    text: "Love the $6 angle. Show one real plant reading on camera so it feels proven.",
-    isFeedback: true,
-  },
-  {
-    id: "c-you2",
-    demoId: "d-you1",
-    authorId: "amit",
-    text: "Log readings to a tiny dashboard — judges love seeing data over time.",
-    isFeedback: true,
-  },
   {
     id: "c-cs1",
     demoId: "d-cs1",
@@ -1798,54 +1420,39 @@ export const matchCards: MatchCard[] = [
 export function sameMajorFamily(
   personMajor: string | undefined,
   myMajor: string,
-  alsoExplore: string[] = [],
 ) {
   if (!personMajor) return false;
-  return (
-    majorsForFilter(myMajor).includes(personMajor) ||
-    alsoExplore.includes(personMajor)
-  );
+  return majorsForFilter(myMajor).includes(personMajor);
+}
+
+/** Feed / reels / stories filter from Settings “What I see”. */
+export function passesViewerFilter(
+  person: { major?: string; college?: string },
+  opts: {
+    contentScope: "major" | "campus" | "all";
+    myMajor: string;
+    myCollege: string;
+  },
+) {
+  if (opts.contentScope === "all") return true;
+  if (opts.contentScope === "campus") {
+    return person.college === opts.myCollege;
+  }
+  return sameMajorFamily(person.major, opts.myMajor);
 }
 
 /** Match deck: only people in the selected major (no other majors mixed in). */
 export function buildMatchDeck(
   myMajor: string,
   excludePersonIds: string[] = [],
-  opts: { allMajors?: boolean; alsoExplore?: string[] } = {},
+  opts: { allMajors?: boolean } = {},
 ): MatchCard[] {
   const excluded = new Set(excludePersonIds);
   const open = matchCards.filter((c) => !excluded.has(c.personId));
   if (opts.allMajors) return open;
   return open.filter((c) =>
-    sameMajorFamily(personById(c.personId).major, myMajor, opts.alsoExplore),
+    sameMajorFamily(personById(c.personId).major, myMajor),
   );
-}
-
-/** Demos + project updates posted by students in any of these majors */
-export function workCountForMajors(ms: readonly string[]) {
-  const inMajors = (authorId: string) =>
-    ms.includes(personById(authorId).major ?? "");
-  return (
-    demos.filter((d) => d.authorId !== YOU_ID && inMajors(d.authorId)).length +
-    projectUpdates.filter((u) => inMajors(u.authorId)).length
-  );
-}
-
-/** Author shown for a demo — posted projects carry their own name/major */
-export function demoAuthor(d: Demo) {
-  const p = personById(d.authorId);
-  if (!d.authorName) return p;
-  return {
-    ...p,
-    name: d.authorName,
-    major: d.authorMajor ?? p.major,
-    handle: d.authorName.toLowerCase().replace(/[^a-z]+/g, ""),
-    avatar: d.authorName
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? "")
-      .join(""),
-  };
 }
 
 export function personById(id: string) {
@@ -1868,15 +1475,10 @@ export function mentorsForQuestion(topic: string) {
     .filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID)
     .map((p) => ({
       person: p,
-      score:
-        p.helpTopics.reduce(
-          (s, t) =>
-            s +
-            (q.includes(t.toLowerCase()) || t.toLowerCase().includes(q)
-              ? 3
-              : 0),
-          0,
-        ) +
+      score: p.helpTopics.reduce(
+        (s, t) => s + (q.includes(t.toLowerCase()) || t.toLowerCase().includes(q) ? 3 : 0),
+        0,
+      ) +
         p.skills.reduce(
           (s, sk) => s + (q.includes(sk.toLowerCase()) ? 2 : 0),
           0,
@@ -1888,12 +1490,9 @@ export function mentorsForQuestion(topic: string) {
 }
 
 export function ratingTone(rating: number) {
-  if (rating < 30)
-    return { label: "Just starting", tip: "Small posts and feedback count." };
-  if (rating < 50)
-    return { label: "Building", tip: "Try a short project matched to you." };
-  if (rating < 70)
-    return { label: "Going strong", tip: "Ready for longer team work." };
+  if (rating < 30) return { label: "Just starting", tip: "Small posts and feedback count." };
+  if (rating < 50) return { label: "Building", tip: "Try a short project matched to you." };
+  if (rating < 70) return { label: "Going strong", tip: "Ready for longer team work." };
   return { label: "Leading", tip: "Help newer students next." };
 }
 
@@ -2047,8 +1646,7 @@ export function peopleYouMightKnow(college: string, selfId: string) {
 }
 
 export function filterPeopleByCollege(college: string | "all") {
-  if (college === "all")
-    return people.filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID);
+  if (college === "all") return people.filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID);
   return people.filter(
     (p) => p.college === college && p.id !== YOU_ID && p.id !== PRO_YOU_ID,
   );
