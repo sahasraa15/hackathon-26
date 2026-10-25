@@ -25,6 +25,7 @@ export default function MatchPage() {
     matched,
     myMajor,
     majorOnly,
+    exploreMajors,
     sendMessage,
     setQuestion,
   } = useRung();
@@ -37,10 +38,13 @@ export default function MatchPage() {
   // Rebuild when profile major or matched set changes — majorOnly = only that major
   useEffect(() => {
     setDeck(
-      buildMatchDeck(myMajor, matched, { allMajors: !majorOnly }),
+      buildMatchDeck(myMajor, matched, {
+        allMajors: !majorOnly,
+        alsoExplore: exploreMajors,
+      }),
     );
     setReady(true);
-  }, [myMajor, majorOnly, matched]);
+  }, [myMajor, majorOnly, matched, exploreMajors]);
 
   const card = deck[0];
   const upcoming = deck.slice(1, 3);
@@ -87,7 +91,10 @@ export default function MatchPage() {
 
   function reshuffle() {
     const arr = [
-      ...buildMatchDeck(myMajor, matched, { allMajors: !majorOnly }),
+      ...buildMatchDeck(myMajor, matched, {
+        allMajors: !majorOnly,
+        alsoExplore: exploreMajors,
+      }),
     ];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

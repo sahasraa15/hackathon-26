@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
-  Building2,
   Clapperboard,
   Compass,
   Home,
@@ -14,10 +13,15 @@ import {
   Sparkles,
   Users,
   UserRound,
+  Bell,
+  ChevronsUp,
+  Coins,
 } from "lucide-react";
 import { useRung } from "@/lib/rung-store";
+import { YOU_ID } from "@/lib/rung-data";
 import { HelpChat } from "@/components/rung/HelpChat";
 import { cn } from "@/lib/utils";
+import { BridgeToast } from "@/components/rung/BridgeToast";
 
 const studentTabs = [
   { href: "/", label: "Feed", icon: Home },
@@ -29,8 +33,8 @@ const studentTabs = [
 
 const proTabs = [
   { href: "/pro", label: "Home", icon: Briefcase },
-  { href: "/pro/sponsors", label: "Sponsors", icon: Building2 },
   { href: "/pro/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/pro/ladder", label: "Ladder", icon: ChevronsUp },
   { href: "/network", label: "Network", icon: Users },
   { href: "/profile", label: "You", icon: UserRound },
 ] as const;
@@ -38,7 +42,23 @@ const proTabs = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { points, tier, session, hydrated, myMajor } = useRung();
+  const {
+    points,
+    tier,
+    session,
+    hydrated,
+    myMajor,
+    credits,
+    demos,
+    comments,
+    seenFeedback,
+  } = useRung();
+  const myDemoIds = new Set(
+    demos.filter((d) => d.authorId === YOU_ID).map((d) => d.id),
+  );
+  const unread = comments.filter(
+    (c) => myDemoIds.has(c.demoId) && !seenFeedback.includes(c.id),
+  ).length;
   const isLogin = pathname.startsWith("/login");
   const isReels = pathname.startsWith("/reels");
 
@@ -51,7 +71,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [hydrated, session, isLogin, router]);
 
   if (isLogin) {
-    return <div className="app-device text-rung-fg">{children}</div>;
+    return (
+      <div className="app-device text-rung-fg">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
+      </div>
+    );
   }
 
   if (!hydrated || !session) {
@@ -93,6 +119,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="font-semibold tabular-nums">{points}</span>
               </div>
             )}
+            {session === "professional" && (
+              <Link
+                href="/pro/ladder"
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-sm"
+                aria-label={`${credits} mentor credits`}
+              >
+                <Coins className="size-3.5 text-rung-ember" />
+                <span className="font-semibold tabular-nums">{credits}</span>
+              </Link>
+            )}
+            {session === "student" && (
+              <Link
+                href="/my-projects"
+                className="relative rounded-full p-1.5 text-rung-mute"
+                aria-label={
+                  unread ? `My projects, ${unread} new notes` : "My projects"
+                }
+              >
+                <Bell className="size-4" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-rung-ember text-[9px] font-semibold text-white tabular-nums">
+                    {unread}
+                  </span>
+                )}
+              </Link>
+            )}
             {session === "student" && (
               <Link
                 href="/projects"
@@ -115,6 +167,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
         {!isReels && <HelpChat />}
       </div>
+
+      <BridgeToast />
 
       <nav
         className={cn(

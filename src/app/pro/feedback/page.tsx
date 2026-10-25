@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { people } from "@/lib/rung-data";
+import { useEffect, useState } from "react";
+import { Play } from "lucide-react";
+import { YOU_ID, people, personById } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
+
+/** Demo ids this tab already reported as viewed, so revisits don't re-count */
+const viewedThisTab = new Set<string>();
 
 export default function ProFeedbackPage() {
   const {
@@ -15,7 +19,29 @@ export default function ProFeedbackPage() {
     you,
     matched,
     swipeMatch,
+    proMajors,
+    notifyDemo,
   } = useRung();
+  const [tried, setTried] = useState<Set<string>>(() => new Set());
+  // Students in the pro's fields first; fall back to everyone if none match
+  const fieldDemos = demos.filter((d) =>
+    proMajors.includes(personById(d.authorId).major ?? ""),
+  );
+  // The student's own demo is pinned first so the live two-window demo works
+  const queue = [
+    ...demos.filter((d) => d.authorId === YOU_ID),
+    ...(fieldDemos.length ? fieldDemos : demos).filter(
+      (d) => d.authorId !== YOU_ID,
+    ),
+  ];
+  useEffect(() => {
+    for (const d of demos) {
+      if (d.authorId !== YOU_ID || viewedThisTab.has(d.id)) continue;
+      viewedThisTab.add(d.id);
+      notifyDemo(d.id, "view");
+    }
+  }, [demos, notifyDemo]);
+
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const seniors = people
     .filter(
@@ -52,12 +78,39 @@ export default function ProFeedbackPage() {
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-rung-fg">Queue</h2>
         <ul className="mt-3 space-y-3">
-          {demos.slice(0, 3).map((d) => (
+          {queue.slice(0, 3).map((d) => (
             <li
               key={d.id}
               className="rounded-2xl border border-black/[0.06] bg-white p-4"
             >
-              <p className="font-medium text-rung-fg">{d.title}</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium text-rung-fg">{d.title}</p>
+                {d.authorId === YOU_ID && (
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#ffe2c5] px-2 py-0.5 text-[10px] font-semibold text-rung-fg">
+                    <span className="size-1.5 animate-pulse rounded-full bg-[#e2552b]" />
+                    Live
+                  </span>
+                )}
+              </div>
+              <div className="mt-0.5 flex items-center justify-between gap-2">
+                <p className="text-xs text-rung-mute">
+                  {personById(d.authorId).name} · {personById(d.authorId).major}
+                </p>
+                {d.authorId === YOU_ID && (
+                  <button
+                    type="button"
+                    disabled={tried.has(d.id)}
+                    onClick={() => {
+                      setTried((prev) => new Set(prev).add(d.id));
+                      notifyDemo(d.id, "try");
+                    }}
+                    className="flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] font-medium text-rung-fg disabled:opacity-50"
+                  >
+                    <Play className="size-3" />
+                    {tried.has(d.id) ? "Tried" : "Try prototype"}
+                  </button>
+                )}
+              </div>
               <form
                 className="mt-3 flex gap-2"
                 onSubmit={(e) => {

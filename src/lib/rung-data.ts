@@ -69,11 +69,7 @@ export type Project = {
   company?: string;
 };
 
-export type ReelVisual =
-  | "cs-hook"
-  | "cs-live"
-  | "cs-code"
-  | "cs-ship";
+export type ReelVisual = "cs-hook" | "cs-live" | "cs-code" | "cs-ship";
 
 export type Demo = {
   id: string;
@@ -88,6 +84,10 @@ export type Demo = {
   projectId?: string;
   /** Animated in-reel demo canvas (CS product walkthrough) */
   visual?: ReelVisual;
+  /** People who tried the prototype */
+  tries?: number;
+  /** Professionals who opened it */
+  proViews?: number;
 };
 
 export type Story = {
@@ -128,6 +128,9 @@ export type Comment = {
   authorId: string;
   text: string;
   isFeedback: boolean;
+  /** Set on live notes from another window, whose author may be a new sign-up */
+  fromName?: string;
+  fromTitle?: string;
 };
 
 export type ShopItem = {
@@ -193,6 +196,212 @@ export const majorFamily: Record<string, string[]> = {
 
 export function majorsForFilter(major: string) {
   return majorFamily[major] ?? [major];
+}
+
+/** .edu domains we recognize → college name */
+const collegeDomains: Record<string, (typeof colleges)[number]> = {
+  "osu.edu": "Ohio State",
+  "umich.edu": "Michigan",
+  "purdue.edu": "Purdue",
+  "cmu.edu": "CMU",
+  "illinois.edu": "UIUC",
+};
+
+export function isEduEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.edu$/i.test(email.trim());
+}
+
+/** College from a student email, including subdomains (andrew.cmu.edu). */
+export function collegeFromEmail(email: string) {
+  const domain = email.trim().toLowerCase().split("@")[1] ?? "";
+  const match = Object.keys(collegeDomains).find(
+    (d) => domain === d || domain.endsWith(`.${d}`),
+  );
+  return match ? collegeDomains[match] : null;
+}
+
+/** Fields a professional can pick; each maps to the student majors they see. */
+export const professionFields = [
+  { id: "tech", label: "Software & tech", majors: ["CSE"] },
+  { id: "health", label: "Healthcare", majors: ["Nursing", "Public Health"] },
+  {
+    id: "science",
+    label: "Life sciences",
+    majors: ["Biology", "Microbiology"],
+  },
+  { id: "media", label: "Media & writing", majors: ["Journalism", "English"] },
+  { id: "design", label: "Design", majors: ["Design"] },
+  { id: "business", label: "Business & finance", majors: ["Business"] },
+  { id: "education", label: "Education", majors: ["Education", "Psychology"] },
+  { id: "psych", label: "Psychology", majors: ["Psychology"] },
+  { id: "music", label: "Music & arts", majors: ["Music"] },
+] as const;
+
+export type ProfessionFieldId = (typeof professionFields)[number]["id"];
+
+/** Career rungs used by the pro Ladder */
+export const levels = [
+  { id: 1, label: "Early career" },
+  { id: 2, label: "Mid-level" },
+  { id: 3, label: "Senior" },
+  { id: 4, label: "Leadership" },
+] as const;
+
+export function levelLabel(level: number) {
+  return levels.find((l) => l.id === level)?.label ?? "Mid-level";
+}
+
+/** Sample professionals for the Ladder (separate from the student network) */
+export type LadderPro = {
+  id: string;
+  name: string;
+  avatar: string;
+  title: string;
+  company: string;
+  field: string;
+  level: number;
+  helpfulNotes: number;
+};
+
+export const ladderPros: LadderPro[] = [
+  {
+    id: "lp-riya",
+    name: "Riya Shah",
+    avatar: "RS",
+    title: "Clinical scientist",
+    company: "Abbott",
+    field: "science",
+    level: 2,
+    helpfulNotes: 14,
+  },
+  {
+    id: "lp-amit",
+    name: "Amit Rao",
+    avatar: "AR",
+    title: "Software engineer",
+    company: "Honda",
+    field: "tech",
+    level: 2,
+    helpfulNotes: 9,
+  },
+  {
+    id: "lp-marcus",
+    name: "Marcus Webb",
+    avatar: "MW",
+    title: "Community partnerships lead",
+    company: "Honda",
+    field: "business",
+    level: 3,
+    helpfulNotes: 21,
+  },
+  {
+    id: "lp-elena",
+    name: "Elena Ruiz",
+    avatar: "ER",
+    title: "Director of R&D",
+    company: "Abbott",
+    field: "science",
+    level: 4,
+    helpfulNotes: 32,
+  },
+  {
+    id: "lp-tom",
+    name: "Tom Becker",
+    avatar: "TB",
+    title: "Senior research scientist",
+    company: "Battelle",
+    field: "science",
+    level: 3,
+    helpfulNotes: 18,
+  },
+  {
+    id: "lp-hana",
+    name: "Hana Ito",
+    avatar: "HI",
+    title: "Lab associate",
+    company: "Battelle",
+    field: "science",
+    level: 1,
+    helpfulNotes: 3,
+  },
+  {
+    id: "lp-dev",
+    name: "Dev Malhotra",
+    avatar: "DM",
+    title: "Staff engineer",
+    company: "Google",
+    field: "tech",
+    level: 3,
+    helpfulNotes: 26,
+  },
+  {
+    id: "lp-sara",
+    name: "Sara Kim",
+    avatar: "SK",
+    title: "VP Engineering",
+    company: "Root",
+    field: "tech",
+    level: 4,
+    helpfulNotes: 40,
+  },
+  {
+    id: "lp-leo",
+    name: "Leo Grant",
+    avatar: "LG",
+    title: "Junior developer",
+    company: "CoverMyMeds",
+    field: "tech",
+    level: 1,
+    helpfulNotes: 2,
+  },
+  {
+    id: "lp-nora",
+    name: "Nora Haddad",
+    avatar: "NH",
+    title: "Product designer",
+    company: "Google",
+    field: "design",
+    level: 2,
+    helpfulNotes: 11,
+  },
+  {
+    id: "lp-james",
+    name: "James Okafor",
+    avatar: "JO",
+    title: "Nurse manager",
+    company: "OhioHealth",
+    field: "health",
+    level: 3,
+    helpfulNotes: 17,
+  },
+  {
+    id: "lp-mia",
+    name: "Mia Chen",
+    avatar: "MC",
+    title: "Analyst",
+    company: "JPMorgan",
+    field: "business",
+    level: 1,
+    helpfulNotes: 4,
+  },
+];
+
+/** Feedback minutes this week, for the company leaderboard (sample) */
+export const companyMinutes: { company: string; minutes: number }[] = [
+  { company: "Abbott", minutes: 340 },
+  { company: "Honda", minutes: 295 },
+  { company: "Battelle", minutes: 210 },
+  { company: "Root", minutes: 160 },
+];
+
+export function majorsForFields(fieldIds: string[]): string[] {
+  return [
+    ...new Set(
+      professionFields
+        .filter((f) => fieldIds.includes(f.id))
+        .flatMap((f) => f.majors),
+    ),
+  ];
 }
 
 export const people: Person[] = [
@@ -697,6 +906,21 @@ export const projects: Project[] = [
 
 export const demos: Demo[] = [
   {
+    // The signed-in student's own demo — pinned in the pro queue for the live demo
+    id: "d-you1",
+    authorId: YOU_ID,
+    title: "Leaf stress sensor · first prototype",
+    caption:
+      "A $6 sensor that flags thirsty plants before they wilt. Is the pitch clear?",
+    tags: ["Biology", "hardware", "demo"],
+    likes: 12,
+    remixCount: 1,
+    gradient: "from-[#ffffc5] via-[#f6efff] to-[#e5ccff]",
+    mediaLabel: "Reel · 0:20",
+    tries: 41,
+    proViews: 2,
+  },
+  {
     id: "d-cs1",
     authorId: "kai",
     title: "QueueLess · the problem",
@@ -714,8 +938,7 @@ export const demos: Demo[] = [
     id: "d-cs2",
     authorId: "kai",
     title: "QueueLess · live map",
-    caption:
-      "Halls update every 8s. Tap a building → ETA. Is the UI too busy?",
+    caption: "Halls update every 8s. Tap a building → ETA. Is the UI too busy?",
     tags: ["CSE", "UI", "realtime"],
     likes: 189,
     remixCount: 27,
@@ -728,8 +951,7 @@ export const demos: Demo[] = [
     id: "d-cs3",
     authorId: "kai",
     title: "QueueLess · the stack",
-    caption:
-      "Next + WS ingest + rolling avg. Where would you cache? Be mean.",
+    caption: "Next + WS ingest + rolling avg. Where would you cache? Be mean.",
     tags: ["CSE", "backend", "code"],
     likes: 156,
     remixCount: 33,
@@ -742,8 +964,7 @@ export const demos: Demo[] = [
     id: "d-cs4",
     authorId: "kai",
     title: "QueueLess · shipped",
-    caption:
-      "Pilot: 3 halls, −4.2 min avg wait. Remix the model or the UX.",
+    caption: "Pilot: 3 halls, −4.2 min avg wait. Remix the model or the UX.",
     tags: ["CSE", "ship", "metrics"],
     likes: 241,
     remixCount: 41,
@@ -1007,6 +1228,20 @@ export const stories: Story[] = [
 ];
 
 export const comments: Comment[] = [
+  {
+    id: "c-you1",
+    demoId: "d-you1",
+    authorId: "riya",
+    text: "Love the $6 angle. Show one real plant reading on camera so it feels proven.",
+    isFeedback: true,
+  },
+  {
+    id: "c-you2",
+    demoId: "d-you1",
+    authorId: "amit",
+    text: "Log readings to a tiny dashboard — judges love seeing data over time.",
+    isFeedback: true,
+  },
   {
     id: "c-cs1",
     demoId: "d-cs1",
@@ -1333,22 +1568,36 @@ export const matchCards: MatchCard[] = [
 export function sameMajorFamily(
   personMajor: string | undefined,
   myMajor: string,
+  alsoExplore: string[] = [],
 ) {
   if (!personMajor) return false;
-  return majorsForFilter(myMajor).includes(personMajor);
+  return (
+    majorsForFilter(myMajor).includes(personMajor) ||
+    alsoExplore.includes(personMajor)
+  );
 }
 
 /** Match deck: only people in the selected major (no other majors mixed in). */
 export function buildMatchDeck(
   myMajor: string,
   excludePersonIds: string[] = [],
-  opts: { allMajors?: boolean } = {},
+  opts: { allMajors?: boolean; alsoExplore?: string[] } = {},
 ): MatchCard[] {
   const excluded = new Set(excludePersonIds);
   const open = matchCards.filter((c) => !excluded.has(c.personId));
   if (opts.allMajors) return open;
   return open.filter((c) =>
-    sameMajorFamily(personById(c.personId).major, myMajor),
+    sameMajorFamily(personById(c.personId).major, myMajor, opts.alsoExplore),
+  );
+}
+
+/** Demos + project updates posted by students in any of these majors */
+export function workCountForMajors(ms: readonly string[]) {
+  const inMajors = (authorId: string) =>
+    ms.includes(personById(authorId).major ?? "");
+  return (
+    demos.filter((d) => d.authorId !== YOU_ID && inMajors(d.authorId)).length +
+    projectUpdates.filter((u) => inMajors(u.authorId)).length
   );
 }
 
@@ -1372,10 +1621,15 @@ export function mentorsForQuestion(topic: string) {
     .filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID)
     .map((p) => ({
       person: p,
-      score: p.helpTopics.reduce(
-        (s, t) => s + (q.includes(t.toLowerCase()) || t.toLowerCase().includes(q) ? 3 : 0),
-        0,
-      ) +
+      score:
+        p.helpTopics.reduce(
+          (s, t) =>
+            s +
+            (q.includes(t.toLowerCase()) || t.toLowerCase().includes(q)
+              ? 3
+              : 0),
+          0,
+        ) +
         p.skills.reduce(
           (s, sk) => s + (q.includes(sk.toLowerCase()) ? 2 : 0),
           0,
@@ -1387,9 +1641,12 @@ export function mentorsForQuestion(topic: string) {
 }
 
 export function ratingTone(rating: number) {
-  if (rating < 30) return { label: "Just starting", tip: "Small posts and feedback count." };
-  if (rating < 50) return { label: "Building", tip: "Try a short project matched to you." };
-  if (rating < 70) return { label: "Going strong", tip: "Ready for longer team work." };
+  if (rating < 30)
+    return { label: "Just starting", tip: "Small posts and feedback count." };
+  if (rating < 50)
+    return { label: "Building", tip: "Try a short project matched to you." };
+  if (rating < 70)
+    return { label: "Going strong", tip: "Ready for longer team work." };
   return { label: "Leading", tip: "Help newer students next." };
 }
 
@@ -1543,7 +1800,8 @@ export function peopleYouMightKnow(college: string, selfId: string) {
 }
 
 export function filterPeopleByCollege(college: string | "all") {
-  if (college === "all") return people.filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID);
+  if (college === "all")
+    return people.filter((p) => p.id !== YOU_ID && p.id !== PRO_YOU_ID);
   return people.filter(
     (p) => p.college === college && p.id !== YOU_ID && p.id !== PRO_YOU_ID,
   );

@@ -3,19 +3,22 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
 export async function GET(request: Request) {
+  const url = new URL(request.url);
+  // Use the host the browser used; the dev server binds 0.0.0.0, which
+  // would otherwise leak into redirects and land on a different origin.
+  const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
+  const returnTo = url.searchParams.get("returnTo") || "/profile";
+
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
-    return NextResponse.json(
-      {
-        error:
-          "Missing GITHUB_CLIENT_ID. Add it to .env.local (see env.example).",
-      },
-      { status: 500 },
+    // Bounce back to the app with a readable error instead of a JSON page
+    const dest = new URL(returnTo.startsWith("/") ? returnTo : "/profile", origin);
+    dest.searchParams.set(
+      "gh_error",
+      "GitHub isn't set up yet. Add GITHUB_CLIENT_ID to .env.local (see env.example).",
     );
+    return NextResponse.redirect(dest);
   }
-
-  const url = new URL(request.url);
-  const returnTo = url.searchParams.get("returnTo") || "/profile";
   const state = randomBytes(16).toString("hex");
 
   const cookieStore = await cookies();
@@ -36,7 +39,7 @@ export async function GET(request: Request) {
 
   const redirectUri =
     process.env.GITHUB_REDIRECT_URI ||
-    `${url.origin}/api/auth/github/callback`;
+    `${origin}/api/auth/github/callback`;
 
   const auth = new URL("https://github.com/login/oauth/authorize");
   auth.searchParams.set("client_id", clientId);

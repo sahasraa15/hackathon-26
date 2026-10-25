@@ -17,7 +17,7 @@ export default function ProHomePage() {
         Hi, {you.name.split(" ")[0]}
       </h1>
       <p className="mt-1 text-sm text-rung-mute">
-        {you.company} · {you.college} alum
+        {[you.workforceRole, you.company].filter(Boolean).join(" · ")}
       </p>
 
       <div className="mt-5 rounded-2xl border border-black/[0.06] bg-white p-4">

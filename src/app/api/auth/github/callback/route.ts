@@ -4,6 +4,9 @@ import { scoreGithubRepos, type GhRepo } from "@/lib/github-score";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  // Use the host the browser used; the dev server binds 0.0.0.0, which
+  // would otherwise leak into redirects and land on a different origin.
+  const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const err = url.searchParams.get("error");
@@ -13,7 +16,7 @@ export async function GET(request: Request) {
   const returnTo = cookieStore.get("gh_oauth_return")?.value || "/profile";
 
   const fail = (message: string) => {
-    const dest = new URL(returnTo, url.origin);
+    const dest = new URL(returnTo, origin);
     dest.searchParams.set("gh_error", message);
     return NextResponse.redirect(dest);
   };
@@ -31,7 +34,7 @@ export async function GET(request: Request) {
 
   const redirectUri =
     process.env.GITHUB_REDIRECT_URI ||
-    `${url.origin}/api/auth/github/callback`;
+    `${origin}/api/auth/github/callback`;
 
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
@@ -113,7 +116,7 @@ export async function GET(request: Request) {
   cookieStore.delete("gh_oauth_state");
   cookieStore.delete("gh_oauth_return");
 
-  const dest = new URL(returnTo, url.origin);
+  const dest = new URL(returnTo, origin);
   dest.searchParams.set("gh", "connected");
   return NextResponse.redirect(dest);
 }

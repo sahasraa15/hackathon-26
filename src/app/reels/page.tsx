@@ -6,14 +6,15 @@ import { useRung } from "@/lib/rung-store";
 import { ReelSlide } from "@/components/rung/ReelSlide";
 
 export default function ReelsPage() {
-  const { demos, myMajor, majorOnly, setMajorOnly } = useRung();
+  const { demos, myMajor, majorOnly, setMajorOnly, exploreMajors } =
+    useRung();
 
   const filtered = useMemo(() => {
     if (!majorOnly) return demos;
     return demos.filter((d) =>
-      sameMajorFamily(personById(d.authorId).major, myMajor),
+      sameMajorFamily(personById(d.authorId).major, myMajor, exploreMajors),
     );
-  }, [demos, majorOnly, myMajor]);
+  }, [demos, majorOnly, myMajor, exploreMajors]);
 
   return (
     <div className="relative h-full bg-black">
