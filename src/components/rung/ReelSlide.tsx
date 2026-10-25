@@ -10,7 +10,7 @@ import {
   SendHorizontal,
   X,
 } from "lucide-react";
-import { personById } from "@/lib/rung-data";
+import { demoAuthor, personById } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { CsDemoVisual } from "@/components/rung/CsDemoVisual";
@@ -33,7 +33,7 @@ export function ReelSlide({ demoId }: { demoId: string }) {
   const [draft, setDraft] = useState("");
 
   if (!demo) return null;
-  const author = personById(demo.authorId);
+  const author = demoAuthor(demo);
   const thread = comments.filter((c) => c.demoId === demo.id);
   const isLiked = liked.has(demo.id);
   const isRemixed = remixed.has(demo.id);

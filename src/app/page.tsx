@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Clapperboard, Heart, MessageCircle, X } from "lucide-react";
 import { personById, projectUpdates, sameMajorFamily } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
+import { DailyBrief } from "@/components/rung/DailyBrief";
 import { StoriesBar } from "@/components/rung/StoriesBar";
 import { Avatar } from "@/components/rung/Avatar";
 import { DeviceOverlay } from "@/components/rung/DeviceOverlay";
@@ -75,6 +76,10 @@ export default function FeedPage() {
             Reels
           </Link>
         </div>
+      </div>
+
+      <div className="px-5 pt-3">
+        <DailyBrief collapsible />
       </div>
 
       <StoriesBar />

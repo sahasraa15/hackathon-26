@@ -88,6 +88,12 @@ export type Demo = {
   tries?: number;
   /** Professionals who opened it */
   proViews?: number;
+  /** Set on projects students post in the app (author isn't a seeded person) */
+  authorName?: string;
+  authorMajor?: string;
+  ownerEmail?: string;
+  /** Video, GitHub or live demo link */
+  link?: string;
 };
 
 export type Story = {
@@ -131,6 +137,8 @@ export type Comment = {
   /** Set on live notes from another window, whose author may be a new sign-up */
   fromName?: string;
   fromTitle?: string;
+  /** ms timestamp, for ordering in chat threads (seeded notes have none) */
+  at?: number;
 };
 
 export type ShopItem = {
@@ -261,6 +269,12 @@ export type LadderPro = {
   field: string;
   level: number;
   helpfulNotes: number;
+  /** Network role; mentors when unset */
+  kind?: "recruiter" | "enthusiast" | "mentor";
+  /** What they're passionate about outside the day job */
+  passion?: string;
+  /** Recruiters: what they're hiring for */
+  hiringFor?: string;
 };
 
 export const ladderPros: LadderPro[] = [
@@ -384,6 +398,107 @@ export const ladderPros: LadderPro[] = [
     level: 1,
     helpfulNotes: 4,
   },
+];
+
+/** Pro Network directory: Ladder mentors plus recruiters and enthusiasts (sample) */
+export const networkPros: LadderPro[] = [
+  {
+    id: "np-priya",
+    name: "Priya Desai",
+    avatar: "PD",
+    title: "University recruiter",
+    company: "Google",
+    field: "tech",
+    level: 2,
+    helpfulNotes: 6,
+    kind: "recruiter",
+    hiringFor: "SWE interns · summer 2027",
+  },
+  {
+    id: "np-ben",
+    name: "Ben Carter",
+    avatar: "BC",
+    title: "Talent partner, R&D",
+    company: "Abbott",
+    field: "science",
+    level: 3,
+    helpfulNotes: 8,
+    kind: "recruiter",
+    hiringFor: "Lab co-ops · diagnostics",
+  },
+  {
+    id: "np-alicia",
+    name: "Alicia Gomez",
+    avatar: "AG",
+    title: "Campus recruiting lead",
+    company: "JPMorgan",
+    field: "business",
+    level: 3,
+    helpfulNotes: 5,
+    kind: "recruiter",
+    hiringFor: "Analyst program",
+  },
+  {
+    id: "np-kwame",
+    name: "Kwame Mensah",
+    avatar: "KM",
+    title: "Clinical recruiter",
+    company: "OhioHealth",
+    field: "health",
+    level: 2,
+    helpfulNotes: 4,
+    kind: "recruiter",
+    hiringFor: "Nurse residency",
+  },
+  {
+    id: "np-grace",
+    name: "Grace Liu",
+    avatar: "GL",
+    title: "Data scientist",
+    company: "Nationwide",
+    field: "science",
+    level: 2,
+    helpfulNotes: 12,
+    kind: "enthusiast",
+    passion: "Plant genomics side projects; mentors iGEM teams",
+  },
+  {
+    id: "np-omar",
+    name: "Omar Farouk",
+    avatar: "OF",
+    title: "Mechanical engineer",
+    company: "Honda",
+    field: "tech",
+    level: 2,
+    helpfulNotes: 10,
+    kind: "enthusiast",
+    passion: "Runs weekend Arduino workshops",
+  },
+  {
+    id: "np-lena",
+    name: "Lena Park",
+    avatar: "LP",
+    title: "UX researcher",
+    company: "Root",
+    field: "design",
+    level: 2,
+    helpfulNotes: 9,
+    kind: "enthusiast",
+    passion: "Accessibility research, loves student critiques",
+  },
+  {
+    id: "np-sam",
+    name: "Sam Rivera",
+    avatar: "SR",
+    title: "Epidemiologist",
+    company: "Columbus Public Health",
+    field: "health",
+    level: 3,
+    helpfulNotes: 15,
+    kind: "enthusiast",
+    passion: "Community health data storytelling",
+  },
+  ...ladderPros.map((p) => ({ ...p, kind: "mentor" as const })),
 ];
 
 /** Feedback minutes this week, for the company leaderboard (sample) */
@@ -904,10 +1019,13 @@ export const projects: Project[] = [
   },
 ];
 
+/** Sample project that only the "Alex" demo persona owns */
+export const PERSONA_DEMO_ID = "d-you1";
+
 export const demos: Demo[] = [
   {
-    // The signed-in student's own demo — pinned in the pro queue for the live demo
-    id: "d-you1",
+    // Alex's own demo — pinned in the pro queue for the live demo
+    id: PERSONA_DEMO_ID,
     authorId: YOU_ID,
     title: "Leaf stress sensor · first prototype",
     caption:
@@ -1161,6 +1279,118 @@ export const projectUpdates: ProjectUpdate[] = [
 ];
 
 export const stories: Story[] = [
+  {
+    id: "s-live0",
+    authorId: "hana",
+    text: "PCR came back clean on try #4. Running gels now",
+    status: "building",
+    hoursAgo: 0,
+    image: "/images/stories/lab.jpg",
+  },
+  {
+    id: "s-live1",
+    authorId: "noah",
+    text: "Biofilm time-lapse: 48h in 12 seconds",
+    status: "shipped",
+    hoursAgo: 0,
+    image: "/images/stories/lab.jpg",
+  },
+  {
+    id: "s-live2",
+    authorId: "maya",
+    text: "Stuck: plate counts don't match OD600. Ideas?",
+    status: "stuck",
+    hoursAgo: 1,
+    image: "/images/stories/lab.jpg",
+  },
+  {
+    id: "s-live3",
+    authorId: "hana",
+    text: "Poster draft for undergrad research expo",
+    status: "building",
+    hoursAgo: 2,
+    image: "/images/stories/poster.jpg",
+  },
+  {
+    id: "s-live4",
+    authorId: "kai",
+    text: "Live: QueueLess hit 200 test users",
+    status: "shipped",
+    hoursAgo: 0,
+    image: "/images/stories/queueless.jpg",
+  },
+  {
+    id: "s-live5",
+    authorId: "evan",
+    text: "Refactoring auth at 2am, send help",
+    status: "stuck",
+    hoursAgo: 1,
+    image: "/images/stories/code.jpg",
+  },
+  {
+    id: "s-live6",
+    authorId: "priya",
+    text: "Pairing on the ML pipeline, drop in",
+    status: "building",
+    hoursAgo: 3,
+    image: "/images/stories/code.jpg",
+  },
+  {
+    id: "s-live7",
+    authorId: "aisha",
+    text: "Survey closes tonight: 300 responses so far",
+    status: "building",
+    hoursAgo: 1,
+    image: "/images/stories/careplan.jpg",
+  },
+  {
+    id: "s-live8",
+    authorId: "jade",
+    text: "Heat map of campus clinic wait times",
+    status: "shipped",
+    hoursAgo: 4,
+    image: "/images/stories/poster.jpg",
+  },
+  {
+    id: "s-live9",
+    authorId: "sam",
+    text: "Sim lab day: care plan feedback welcome",
+    status: "building",
+    hoursAgo: 2,
+    image: "/images/stories/careplan.jpg",
+  },
+  {
+    id: "s-live10",
+    authorId: "sofia",
+    text: "New logo options for the club, vote",
+    status: "stuck",
+    hoursAgo: 3,
+    image: "/images/stories/design.jpg",
+  },
+  {
+    id: "s-live11",
+    authorId: "zoe",
+    text: "Pilot study recruiting: 10 min, +1 coffee",
+    status: "building",
+    hoursAgo: 5,
+    image: "/images/stories/poster.jpg",
+  },
+  {
+    id: "s-live12",
+    authorId: "omar",
+    text: "Pitch deck v3, roast slide 4",
+    status: "stuck",
+    hoursAgo: 2,
+    image: "/images/stories/design.jpg",
+  },
+  {
+    id: "s-live13",
+    authorId: "lena",
+    text: "Story on student housing goes live tomorrow",
+    status: "shipped",
+    hoursAgo: 6,
+    image: "/images/stories/poster.jpg",
+  },
   {
     id: "s0",
     authorId: "kai",
@@ -1599,6 +1829,23 @@ export function workCountForMajors(ms: readonly string[]) {
     demos.filter((d) => d.authorId !== YOU_ID && inMajors(d.authorId)).length +
     projectUpdates.filter((u) => inMajors(u.authorId)).length
   );
+}
+
+/** Author shown for a demo — posted projects carry their own name/major */
+export function demoAuthor(d: Demo) {
+  const p = personById(d.authorId);
+  if (!d.authorName) return p;
+  return {
+    ...p,
+    name: d.authorName,
+    major: d.authorMajor ?? p.major,
+    handle: d.authorName.toLowerCase().replace(/[^a-z]+/g, ""),
+    avatar: d.authorName
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join(""),
+  };
 }
 
 export function personById(id: string) {

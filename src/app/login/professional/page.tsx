@@ -6,9 +6,8 @@ import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { Check } from "lucide-react";
 import {
-  demos,
+  demoAuthor,
   majorsForFields,
-  personById,
   levels,
   professionFields,
   workCountForMajors,
@@ -40,7 +39,7 @@ function companyFromEmail(email: string) {
 }
 
 export default function ProfessionalLoginPage() {
-  const { login } = useRung();
+  const { login, demos } = useRung();
   const router = useRouter();
   const [step, setStep] = useState<Step>("auth");
   const [name, setName] = useState("");
@@ -51,7 +50,7 @@ export default function ProfessionalLoginPage() {
 
   const fieldMajors = majorsForFields(fields);
   const fieldDemos = demos.filter((d) =>
-    fieldMajors.includes(personById(d.authorId).major ?? ""),
+    fieldMajors.includes(demoAuthor(d).major ?? ""),
   );
 
   function finish() {
@@ -242,7 +241,7 @@ export default function ProfessionalLoginPage() {
                   </li>
                 )}
                 {fieldDemos.map((d) => {
-                  const author = personById(d.authorId);
+                  const author = demoAuthor(d);
                   return (
                     <li
                       key={d.id}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { personById, sameMajorFamily } from "@/lib/rung-data";
+import { demoAuthor, sameMajorFamily } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { ReelSlide } from "@/components/rung/ReelSlide";
 
@@ -12,7 +12,7 @@ export default function ReelsPage() {
   const filtered = useMemo(() => {
     if (!majorOnly) return demos;
     return demos.filter((d) =>
-      sameMajorFamily(personById(d.authorId).major, myMajor, exploreMajors),
+      sameMajorFamily(demoAuthor(d).major, myMajor, exploreMajors),
     );
   }, [demos, majorOnly, myMajor, exploreMajors]);
 

@@ -47,8 +47,13 @@ const copy: Record<
   },
   reply: {
     icon: Reply,
-    headline: (n) => `${n} replied to your note`,
-    href: "/pro/feedback",
+    headline: (n) => `${n} replied to you`,
+    href: "/chats",
+  },
+  chat: {
+    icon: MessageSquare,
+    headline: (n) => `${n} sent you a message`,
+    href: "/chats",
   },
   accepted: {
     icon: CalendarCheck,
@@ -77,7 +82,8 @@ export function BridgeToast() {
     item &&
     (item.kind === "feedback" ||
       item.kind === "helpful" ||
-      item.kind === "reply");
+      item.kind === "reply" ||
+      item.kind === "chat");
 
   return (
     <div className="pointer-events-none absolute inset-x-3 top-3 z-50 sm:top-14">

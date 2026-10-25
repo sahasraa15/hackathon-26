@@ -14,11 +14,11 @@ import {
   Users,
   UserRound,
   Bell,
+  MessageCircle,
   ChevronsUp,
   Coins,
 } from "lucide-react";
 import { useRung } from "@/lib/rung-store";
-import { YOU_ID } from "@/lib/rung-data";
 import { HelpChat } from "@/components/rung/HelpChat";
 import { cn } from "@/lib/utils";
 import { BridgeToast } from "@/components/rung/BridgeToast";
@@ -49,13 +49,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     hydrated,
     myMajor,
     credits,
-    demos,
+    myDemos,
     comments,
     seenFeedback,
   } = useRung();
-  const myDemoIds = new Set(
-    demos.filter((d) => d.authorId === YOU_ID).map((d) => d.id),
-  );
+  const myDemoIds = new Set(myDemos.map((d) => d.id));
   const unread = comments.filter(
     (c) => myDemoIds.has(c.demoId) && !seenFeedback.includes(c.id),
   ).length;
@@ -129,6 +127,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="font-semibold tabular-nums">{credits}</span>
               </Link>
             )}
+            <Link
+              href="/chats"
+              className="rounded-full p-1.5 text-rung-mute"
+              aria-label="Messages"
+            >
+              <MessageCircle className="size-4" />
+            </Link>
             {session === "student" && (
               <Link
                 href="/my-projects"
@@ -165,7 +170,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       >
         {children}
-        {!isReels && <HelpChat />}
+        {/* Home pages have the Daily brief assistant instead */}
+        {!isReels && pathname !== "/" && pathname !== "/pro" && <HelpChat />}
       </div>
 
       <BridgeToast />

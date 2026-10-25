@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Building2, MessageSquare, Users } from "lucide-react";
 import { useRung } from "@/lib/rung-store";
+import { DailyBrief } from "@/components/rung/DailyBrief";
 
 export default function ProHomePage() {
   const { you, feedbackMinsToday, feedbackGoalMins } = useRung();
@@ -20,7 +21,11 @@ export default function ProHomePage() {
         {[you.workforceRole, you.company].filter(Boolean).join(" · ")}
       </p>
 
-      <div className="mt-5 rounded-2xl border border-black/[0.06] bg-white p-4">
+      <div className="mt-5">
+        <DailyBrief />
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-black/[0.06] bg-white p-4">
         <div className="flex items-end justify-between">
           <div>
             <p className="text-xs text-rung-mute">Today</p>

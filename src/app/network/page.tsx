@@ -14,6 +14,7 @@ import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { HotspotProject } from "@/components/rung/HotspotProject";
 import { cn } from "@/lib/utils";
+import { ProNetwork } from "@/components/rung/ProNetwork";
 
 export default function NetworkPage() {
   const {
@@ -53,21 +54,17 @@ export default function NetworkPage() {
       matchCards.filter((c) => {
         if (!c.projectImage || !c.hotspots?.length) return false;
         const p = personById(c.personId);
-        if (
-          collegeFilter !== "all" &&
-          p.college !== collegeFilter
-        ) {
+        if (collegeFilter !== "all" && p.college !== collegeFilter) {
           return false;
         }
-        if (
-          majorOnly &&
-          !sameMajorFamily(p.major, myMajor, exploreMajors)
-        )
+        if (majorOnly && !sameMajorFamily(p.major, myMajor, exploreMajors))
           return false;
         return true;
       }),
     [collegeFilter, majorOnly, myMajor, exploreMajors],
   );
+
+  if (session === "professional") return <ProNetwork />;
 
   return (
     <div className="px-5 pt-4 pb-10">
@@ -110,9 +107,7 @@ export default function NetworkPage() {
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      setExpanded(open ? null : card.personId)
-                    }
+                    onClick={() => setExpanded(open ? null : card.personId)}
                     className="flex w-full items-center gap-3 px-3 py-3 text-left"
                   >
                     <Avatar initials={p.avatar} role={p.role} />

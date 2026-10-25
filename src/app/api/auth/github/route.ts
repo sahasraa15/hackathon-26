@@ -7,12 +7,17 @@ export async function GET(request: Request) {
   // Use the host the browser used; the dev server binds 0.0.0.0, which
   // would otherwise leak into redirects and land on a different origin.
   const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
-  const returnTo = url.searchParams.get("returnTo") || "/profile";
+  // Only same-site paths: "/x" yes, "//evil.com" or "https://…" no
+  const requested = url.searchParams.get("returnTo") ?? "";
+  const returnTo =
+    requested.startsWith("/") && !requested.startsWith("//")
+      ? requested
+      : "/profile";
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
     // Bounce back to the app with a readable error instead of a JSON page
-    const dest = new URL(returnTo.startsWith("/") ? returnTo : "/profile", origin);
+    const dest = new URL(returnTo, origin);
     dest.searchParams.set(
       "gh_error",
       "GitHub isn't set up yet. Add GITHUB_CLIENT_ID to .env.local (see env.example).",

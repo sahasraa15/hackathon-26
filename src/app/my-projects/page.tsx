@@ -5,12 +5,14 @@ import Link from "next/link";
 import {
   Briefcase,
   Check,
+  ExternalLink,
+  Plus,
   Eye,
   Heart,
   MessageSquare,
   Play,
 } from "lucide-react";
-import { YOU_ID, personById, type Comment } from "@/lib/rung-data";
+import { personById, type Comment } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 import { cn } from "@/lib/utils";
@@ -139,9 +141,118 @@ function FeedbackItem({ c, isNew }: { c: Comment; isNew: boolean }) {
   );
 }
 
+const fieldClass =
+  "mt-1 w-full rounded-xl bg-[#fffcf0] px-3 py-2.5 text-sm text-rung-fg outline-none ring-1 ring-black/[0.06] focus:ring-[#c9a6ff]";
+
+function PostProjectForm({ onDone }: { onDone: () => void }) {
+  const { postProject, myMajor, exploreMajors } = useRung();
+  const [title, setTitle] = useState("");
+  const [caption, setCaption] = useState("");
+  const [link, setLink] = useState("");
+  const [tags, setTags] = useState<string[]>([myMajor]);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <form
+      className="mt-5 space-y-3 rounded-2xl border border-black/[0.06] bg-white p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!title.trim()) return setError("Give your project a name.");
+        if (link.trim() && !/^https?:\/\/\S+\.\S+/.test(link.trim()))
+          return setError("Links start with http:// or https://");
+        postProject({ title, caption, link, tags });
+        onDone();
+      }}
+    >
+      <label className="block">
+        <span className="text-xs font-medium text-rung-mute">Project name</span>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Dorm energy tracker"
+          className={fieldClass}
+        />
+      </label>
+      <label className="block">
+        <span className="text-xs font-medium text-rung-mute">
+          One-line pitch + what feedback you want
+        </span>
+        <textarea
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          rows={2}
+          placeholder="What it does, and what you're stuck on"
+          className={cn(fieldClass, "resize-none")}
+        />
+      </label>
+      <label className="block">
+        <span className="text-xs font-medium text-rung-mute">
+          Link (video, GitHub or live demo) · optional
+        </span>
+        <input
+          type="url"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          placeholder="https://"
+          className={fieldClass}
+        />
+      </label>
+      <div>
+        <p className="text-xs font-medium text-rung-mute">Tags</p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {[myMajor, ...exploreMajors, "Prototype", "Pitch", "Research"].map(
+            (t) => {
+              const on = tags.includes(t);
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setTags((prev) =>
+                      on ? prev.filter((x) => x !== t) : [...prev, t],
+                    )
+                  }
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-[11px] font-medium",
+                    on
+                      ? "bg-[#e5ccff] text-rung-fg"
+                      : "bg-[#fffcf0] text-rung-mute ring-1 ring-black/[0.06]",
+                  )}
+                >
+                  {t}
+                </button>
+              );
+            },
+          )}
+        </div>
+      </div>
+      {error && <p className="text-xs font-medium text-[#b42318]">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          className="flex-1 rounded-full bg-[#e5ccff] py-2.5 text-sm font-semibold text-rung-fg"
+        >
+          Post · +5 pts
+        </button>
+        <button
+          type="button"
+          onClick={onDone}
+          className="rounded-full border border-black/[0.08] px-4 py-2.5 text-sm text-rung-mute"
+        >
+          Cancel
+        </button>
+      </div>
+      <p className="text-[11px] text-rung-mute">
+        Professionals in your field see it in their feedback queue right away.
+      </p>
+    </form>
+  );
+}
+
 export default function MyProjectsPage() {
-  const { demos, comments, seenFeedback, markFeedbackSeen } = useRung();
-  const mine = demos.filter((d) => d.authorId === YOU_ID);
+  const { myDemos: mine, comments, seenFeedback, markFeedbackSeen } = useRung();
+  const [posting, setPosting] = useState(false);
   const myNotes = comments.filter((c) => mine.some((d) => d.id === c.demoId));
   // Snapshot what was already seen so NEW stays visible this visit (incl. live notes)
   const [seenOnOpen] = useState(() => new Set(seenFeedback));
@@ -160,17 +271,31 @@ export default function MyProjectsPage() {
         credits.
       </p>
 
-      {mine.length === 0 && (
-        <div className="mt-6 rounded-2xl border border-dashed border-black/[0.12] p-6 text-center text-sm text-rung-mute">
-          No projects yet.{" "}
+      {posting ? (
+        <PostProjectForm onDone={() => setPosting(false)} />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setPosting(true)}
+          className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-black/[0.15] bg-white py-3.5 text-sm font-semibold text-rung-fg"
+        >
+          <Plus className="size-4" />
+          Post a project
+          <span className="font-normal text-rung-mute">· +5 pts</span>
+        </button>
+      )}
+
+      {mine.length === 0 && !posting && (
+        <p className="mt-4 text-center text-sm text-rung-mute">
+          No projects yet. Post one to get notes from professionals, or{" "}
           <Link href="/projects" className="font-medium text-rung-ember">
-            Find one to join →
+            join a team →
           </Link>
-        </div>
+        </p>
       )}
 
       <ul className="mt-5 space-y-4">
-        {mine.map((d) => {
+        {[...mine].reverse().map((d) => {
           const notes = comments.filter(
             (c) => c.demoId === d.id && c.isFeedback,
           );
@@ -190,6 +315,17 @@ export default function MyProjectsPage() {
                 <p className="mt-1 text-xs leading-snug text-rung-fg/80">
                   {d.caption}
                 </p>
+                {d.link && (
+                  <a
+                    href={d.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-rung-ember"
+                  >
+                    <ExternalLink className="size-3" />
+                    Open demo
+                  </a>
+                )}
               </div>
 
               <div className="grid grid-cols-4 gap-2 p-3">

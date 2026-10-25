@@ -17,6 +17,7 @@ import {
   YOU_ID,
   comments as seedComments,
   demos as seedDemos,
+  PERSONA_DEMO_ID,
   ladderPros,
   majorsForFields,
   personById,
@@ -40,6 +41,8 @@ export type SignupProfile = {
   proFields?: string[];
   /** Career rung, 1 (early) – 4 (leadership) */
   level?: number;
+  /** The one-tap "Alex" persona, which owns the sample project */
+  demo?: boolean;
 };
 
 type Booking = {
@@ -73,7 +76,7 @@ export type GithubProfile = {
 /** Live activity from the other window, shown as a toast */
 export type InboxItem = {
   id: string;
-  kind: "feedback" | "view" | "try" | "helpful" | "reply" | "accepted";
+  kind: "feedback" | "view" | "try" | "helpful" | "reply" | "accepted" | "chat";
   fromName: string;
   text?: string;
   demoId?: string;
@@ -82,6 +85,40 @@ export type InboxItem = {
 };
 
 export type AskStatus = "pending" | "accepted";
+
+/** A chat line in the thread between one pro and a student about one demo */
+export type ChatMsg = {
+  id: string;
+  demoId: string;
+  proName: string;
+  from: "pro" | "student";
+  text: string;
+  at: number;
+};
+
+export type NewProject = {
+  title: string;
+  caption: string;
+  link?: string;
+  tags: string[];
+};
+
+/** Shared across tabs (not per role) so a pro window sees students' posts */
+const PROJECTS_KEY = "cc-projects";
+const postGradients = [
+  "from-[#ffffc5] via-[#f6efff] to-[#e5ccff]",
+  "from-[#ffe2c5] via-[#fff8f0] to-[#ffffc5]",
+  "from-[#e5ccff] via-[#f6efff] to-[#ffe2c5]",
+];
+
+function readPostedProjects(): Demo[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROJECTS_KEY) ?? "[]");
+    return Array.isArray(parsed) ? (parsed as Demo[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 /** Credits a pro spends to ask someone a rung up */
 export const ASK_UP_COST = 10;
@@ -123,6 +160,9 @@ type RungContextValue = {
   /** Pro career rung, 1–4 */
   proLevel: number;
   setProFields: (fieldIds: string[]) => void;
+  /** Student: projects you own (sample one only for the demo persona) */
+  myDemos: Demo[];
+  postProject: (input: NewProject) => void;
   inbox: InboxItem[];
   dismissInbox: (id: string) => void;
   /** Student: feedback ids already seen on My projects */
@@ -132,6 +172,8 @@ type RungContextValue = {
   markHelpful: (commentId: string) => void;
   replies: Record<string, string>;
   replyToFeedback: (commentId: string, text: string) => void;
+  chat: ChatMsg[];
+  sendChat: (demoId: string, proName: string, text: string) => void;
   /** Pro: tell the student's window you opened or tried their demo */
   notifyDemo: (demoId: string, type: "view" | "try") => void;
   credits: number;
@@ -193,6 +235,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
   const [matched, setMatched] = useState<string[]>([]);
   const [passed, setPassed] = useState<string[]>([]);
   const [demos, setDemos] = useState(seedDemos);
+  const [postedProjects, setPostedProjects] = useState<Demo[]>([]);
   const [comments, setComments] = useState(seedComments);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [joinedProjects, setJoinedProjects] = useState<string[]>([]);
@@ -210,6 +253,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
   const [seenFeedback, setSeenFeedback] = useState<string[]>([]);
   const [helpfulIds, setHelpfulIds] = useState<string[]>([]);
   const [replies, setReplies] = useState<Record<string, string>>({});
+  const [chat, setChat] = useState<ChatMsg[]>([]);
   const [credits, setCredits] = useState(ASK_UP_COST);
   const [helpfulReceived, setHelpfulReceived] = useState(0);
   const [feedbackSent, setFeedbackSent] = useState(0);
@@ -298,6 +342,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
         if (parsed.replies && typeof parsed.replies === "object")
           setReplies(parsed.replies as Record<string, string>);
         if (typeof parsed.credits === "number") setCredits(parsed.credits);
+        if (Array.isArray(parsed.chat)) setChat(parsed.chat as ChatMsg[]);
         if (typeof parsed.helpfulReceived === "number")
           setHelpfulReceived(parsed.helpfulReceived);
         if (typeof parsed.feedbackSent === "number")
@@ -310,7 +355,17 @@ export function RungProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
+    setPostedProjects(readPostedProjects());
     setHydrated(true);
+  }, []);
+
+  // Pick up projects posted from another tab (e.g. student → pro window)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PROJECTS_KEY) setPostedProjects(readPostedProjects());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
@@ -347,6 +402,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
         seenFeedback,
         helpfulIds,
         replies,
+        chat,
         credits,
         helpfulReceived,
         feedbackSent,
@@ -379,6 +435,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
     seenFeedback,
     helpfulIds,
     replies,
+    chat,
     credits,
     helpfulReceived,
     feedbackSent,
@@ -396,6 +453,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
       setSeenFeedback([]);
       setHelpfulIds([]);
       setReplies({});
+      setChat([]);
       setCredits(ASK_UP_COST);
       setHelpfulReceived(0);
       setFeedbackSent(0);
@@ -435,6 +493,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
     setProfile((prev) => (prev ? { ...prev, proFields: fieldIds } : prev));
   }, []);
 
+  const myDemoIdsRef = useRef(new Set<string>());
   const commentsRef = useRef(comments);
   useEffect(() => {
     commentsRef.current = comments;
@@ -458,11 +517,42 @@ export function RungProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session) return;
     return onBridge((e) => {
+      if (e.type === "chat") {
+        const forMe =
+          session === "student"
+            ? e.from === "pro" && myDemoIdsRef.current.has(e.demoId)
+            : e.from === "student" &&
+              commentsRef.current.some(
+                (c) => c.demoId === e.demoId && c.authorId === PRO_YOU_ID,
+              );
+        if (!forMe) return;
+        setChat((prev) =>
+          prev.some((m) => m.id === e.id)
+            ? prev
+            : [
+                ...prev,
+                {
+                  id: e.id,
+                  demoId: e.demoId,
+                  proName: e.proName,
+                  from: e.from,
+                  text: e.text,
+                  at: e.at,
+                },
+              ],
+        );
+        pushInbox({
+          kind: session === "student" ? "chat" : "reply",
+          fromName: e.fromName,
+          text: e.text,
+          demoId: e.demoId,
+        });
+        return;
+      }
       if (session === "student") {
         if (e.type !== "feedback" && e.type !== "view" && e.type !== "try")
           return;
-        const demo = seedDemos.find((d) => d.id === e.demoId);
-        if (demo?.authorId !== YOU_ID) return;
+        if (!myDemoIdsRef.current.has(e.demoId)) return;
         if (e.type === "view") {
           bumpDemo(e.demoId, "proViews");
           pushInbox({
@@ -493,6 +583,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
                     isFeedback: true,
                     fromName: e.fromName,
                     fromTitle: e.fromTitle,
+                    at: e.at,
                   },
                 ],
           );
@@ -555,19 +646,38 @@ export function RungProvider({ children }: { children: ReactNode }) {
     [you.name],
   );
 
+  const sendChat = useCallback(
+    (demoId: string, proName: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || !session) return;
+      const msg: ChatMsg = {
+        id: `m-${Date.now()}`,
+        demoId,
+        proName,
+        from: session === "professional" ? "pro" : "student",
+        text: trimmed,
+        at: Date.now(),
+      };
+      setChat((prev) => [...prev, msg]);
+      postBridge({ type: "chat", ...msg, fromName: you.name });
+    },
+    [session, you.name],
+  );
+
   const replyToFeedback = useCallback(
     (commentId: string, text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       setReplies((prev) => ({ ...prev, [commentId]: trimmed }));
-      postBridge({
-        type: "reply",
-        commentId,
-        fromName: you.name,
-        text: trimmed,
-      });
+      const note = commentsRef.current.find((c) => c.id === commentId);
+      if (note)
+        sendChat(
+          note.demoId,
+          note.fromName ?? personById(note.authorId).name,
+          trimmed,
+        );
     },
-    [you.name],
+    [sendChat],
   );
 
   const proTitle = [you.workforceRole, you.company].filter(Boolean).join(" · ");
@@ -640,6 +750,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
           authorId: youId,
           text: trimmed,
           isFeedback: true,
+          at: Date.now(),
         },
       ]);
       setPoints((p) => p + 3);
@@ -763,9 +874,16 @@ export function RungProvider({ children }: { children: ReactNode }) {
     setMajorOnly(true);
   }, []);
 
+  // Fresh sign-ups don't inherit the sample persona's project or its notes
+  const isPersona = !profile || Boolean(profile.demo);
+  const hidePersona = session === "student" && !isPersona;
+
   const demosWithStats = useMemo(
     () =>
-      demos.map((d) => {
+      [
+        ...demos.filter((d) => !(hidePersona && d.id === PERSONA_DEMO_ID)),
+        ...postedProjects,
+      ].map((d) => {
         const delta = demoDeltas[d.id];
         return delta
           ? {
@@ -775,7 +893,66 @@ export function RungProvider({ children }: { children: ReactNode }) {
             }
           : d;
       }),
-    [demos, demoDeltas],
+    [demos, demoDeltas, hidePersona, postedProjects],
+  );
+
+  const visibleComments = useMemo(
+    () =>
+      hidePersona
+        ? comments.filter((c) => c.demoId !== PERSONA_DEMO_ID)
+        : comments,
+    [comments, hidePersona],
+  );
+
+  const myDemos = useMemo(
+    () =>
+      session === "student"
+        ? demosWithStats.filter(
+            (d) =>
+              d.authorId === YOU_ID &&
+              (d.ownerEmail
+                ? d.ownerEmail === profile?.email
+                : d.id === PERSONA_DEMO_ID && isPersona),
+          )
+        : [],
+    [demosWithStats, session, profile, isPersona],
+  );
+
+  useEffect(() => {
+    myDemoIdsRef.current = new Set(myDemos.map((d) => d.id));
+  }, [myDemos]);
+
+  const postProject = useCallback(
+    (input: NewProject) => {
+      const title = input.title.trim();
+      if (!title) return;
+      const project: Demo = {
+        id: `d-${Date.now()}`,
+        authorId: YOU_ID,
+        authorName: you.name,
+        authorMajor: myMajor,
+        ownerEmail: profile?.email,
+        title,
+        caption: input.caption.trim(),
+        link: input.link?.trim() || undefined,
+        tags: input.tags,
+        likes: 0,
+        remixCount: 0,
+        gradient: postGradients[Date.now() % postGradients.length],
+        mediaLabel: input.link ? "Project · link" : "Project",
+        tries: 0,
+        proViews: 0,
+      };
+      const next = [...readPostedProjects(), project];
+      try {
+        localStorage.setItem(PROJECTS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      setPostedProjects(next);
+      setPoints((p) => p + 5);
+    },
+    [you.name, myMajor, profile],
   );
 
   const value = useMemo<RungContextValue>(
@@ -793,7 +970,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
       matched,
       passed,
       demos: demosWithStats,
-      comments,
+      comments: visibleComments,
       bookings,
       joinedProjects,
       joinedSponsors,
@@ -810,6 +987,8 @@ export function RungProvider({ children }: { children: ReactNode }) {
       proFields: profile?.proFields ?? [],
       proLevel: profile?.level ?? 2,
       setProFields,
+      myDemos,
+      postProject,
       inbox,
       dismissInbox,
       seenFeedback,
@@ -818,6 +997,8 @@ export function RungProvider({ children }: { children: ReactNode }) {
       markHelpful,
       replies,
       replyToFeedback,
+      chat,
+      sendChat,
       notifyDemo,
       credits,
       helpfulReceived,
@@ -859,7 +1040,7 @@ export function RungProvider({ children }: { children: ReactNode }) {
       matched,
       passed,
       demosWithStats,
-      comments,
+      visibleComments,
       bookings,
       joinedProjects,
       joinedSponsors,
@@ -872,6 +1053,8 @@ export function RungProvider({ children }: { children: ReactNode }) {
       proMajors,
       profile,
       setProFields,
+      myDemos,
+      postProject,
       inbox,
       dismissInbox,
       seenFeedback,
@@ -880,6 +1063,8 @@ export function RungProvider({ children }: { children: ReactNode }) {
       markHelpful,
       replies,
       replyToFeedback,
+      chat,
+      sendChat,
       notifyDemo,
       credits,
       helpfulReceived,

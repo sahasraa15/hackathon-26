@@ -4,10 +4,9 @@ import Link from "next/link";
 import { Award, Check, ChevronsUp, Coins, Lock, Trophy } from "lucide-react";
 import {
   companyMinutes,
-  demos,
+  demoAuthor,
   ladderPros,
   levelLabel,
-  personById,
   professionFields,
   type LadderPro,
 } from "@/lib/rung-data";
@@ -66,6 +65,7 @@ export default function LadderPage() {
     proMajors,
     proLevel,
     feedbackMinsToday,
+    demos,
   } = useRung();
 
   const inFields = ladderPros.filter((p) => proFields.includes(p.field));
@@ -75,7 +75,7 @@ export default function LadderPage() {
   const peers = inFields.filter((p) => p.level === proLevel);
   const below = inFields.filter((p) => p.level < proLevel);
   const studentDemos = demos.filter((d) =>
-    proMajors.includes(personById(d.authorId).major ?? ""),
+    proMajors.includes(demoAuthor(d).major ?? ""),
   );
   const fieldName =
     professionFields.find((f) => f.id === proFields[0])?.label ?? "your field";

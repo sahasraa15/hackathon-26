@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
-import { YOU_ID, people, personById } from "@/lib/rung-data";
+import { YOU_ID, demoAuthor, people } from "@/lib/rung-data";
 import { useRung } from "@/lib/rung-store";
 import { Avatar } from "@/components/rung/Avatar";
 
@@ -25,11 +25,11 @@ export default function ProFeedbackPage() {
   const [tried, setTried] = useState<Set<string>>(() => new Set());
   // Students in the pro's fields first; fall back to everyone if none match
   const fieldDemos = demos.filter((d) =>
-    proMajors.includes(personById(d.authorId).major ?? ""),
+    proMajors.includes(demoAuthor(d).major ?? ""),
   );
   // The student's own demo is pinned first so the live two-window demo works
   const queue = [
-    ...demos.filter((d) => d.authorId === YOU_ID),
+    ...demos.filter((d) => d.authorId === YOU_ID).reverse(),
     ...(fieldDemos.length ? fieldDemos : demos).filter(
       (d) => d.authorId !== YOU_ID,
     ),
@@ -94,7 +94,7 @@ export default function ProFeedbackPage() {
               </div>
               <div className="mt-0.5 flex items-center justify-between gap-2">
                 <p className="text-xs text-rung-mute">
-                  {personById(d.authorId).name} · {personById(d.authorId).major}
+                  {demoAuthor(d).name} · {demoAuthor(d).major}
                 </p>
                 {d.authorId === YOU_ID && (
                   <button
@@ -111,6 +111,21 @@ export default function ProFeedbackPage() {
                   </button>
                 )}
               </div>
+              {d.caption && (
+                <p className="mt-2 text-xs leading-snug text-rung-mute">
+                  {d.caption}
+                </p>
+              )}
+              {d.link && (
+                <a
+                  href={d.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-xs font-medium text-rung-ember"
+                >
+                  Open demo ↗
+                </a>
+              )}
               <form
                 className="mt-3 flex gap-2"
                 onSubmit={(e) => {

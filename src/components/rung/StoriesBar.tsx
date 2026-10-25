@@ -15,7 +15,8 @@ const statusCopy = {
 } as const;
 
 export function StoriesBar() {
-  const { sendMessage, setQuestion, myMajor, majorOnly } = useRung();
+  const { sendMessage, setQuestion, myMajor, majorOnly, exploreMajors } =
+    useRung();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -23,9 +24,9 @@ export function StoriesBar() {
   const visible = useMemo(() => {
     if (!majorOnly) return stories;
     return stories.filter((s) =>
-      sameMajorFamily(personById(s.authorId).major, myMajor),
+      sameMajorFamily(personById(s.authorId).major, myMajor, exploreMajors),
     );
-  }, [majorOnly, myMajor]);
+  }, [majorOnly, myMajor, exploreMajors]);
 
   const story = activeIdx != null ? visible[activeIdx] : null;
   const author = story ? personById(story.authorId) : null;

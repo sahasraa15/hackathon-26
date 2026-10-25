@@ -15,10 +15,27 @@ export type BridgeEvent =
       at: number;
     }
   /** pro → student: opened or tried the student's demo */
-  | { type: "view" | "try"; demoId: string; fromName: string; fromTitle: string }
+  | {
+      type: "view" | "try";
+      demoId: string;
+      fromName: string;
+      fromTitle: string;
+    }
   /** student → pro: marked a note helpful, or replied to it */
   | { type: "helpful"; commentId: string; fromName: string }
-  | { type: "reply"; commentId: string; fromName: string; text: string };
+  | { type: "reply"; commentId: string; fromName: string; text: string }
+  /** either way: a chat message in the thread about one demo */
+  | {
+      type: "chat";
+      id: string;
+      demoId: string;
+      from: "pro" | "student";
+      /** The professional in this thread */
+      proName: string;
+      fromName: string;
+      text: string;
+      at: number;
+    };
 
 const CHANNEL = "cc-bridge";
 

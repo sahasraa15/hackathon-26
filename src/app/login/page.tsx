@@ -12,6 +12,7 @@ const demoStudent: SignupProfile = {
   college: "Ohio State",
   major: "Biology",
   exploreMajors: ["CSE", "Public Health"],
+  demo: true,
 };
 
 const demoPro: SignupProfile = {
