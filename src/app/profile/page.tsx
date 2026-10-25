@@ -1,5 +1,6 @@
 "use client";
 
+import { GithubFeedback } from "@/components/rung/GithubFeedback";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -210,6 +211,7 @@ function ProfileInner() {
                 ))}
               </ul>
             )}
+            <GithubFeedback score ={githubProfile.scoredAt} />
             <div className="flex gap-2 pt-1">
               <a
                 href="/api/auth/github?returnTo=/profile"

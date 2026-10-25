@@ -1,9 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { scoreGithubRepos, type GhRepo } from "@/lib/github-score";
+import { computeGithubProfile } from "@/lib/github-profile";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  // Use the host the browser used; the dev server binds 0.0.0.0, which
+  // would otherwise leak into redirects and land on a different origin.
+  const origin = `${url.protocol}//${request.headers.get("host") ?? url.host}`;
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const err = url.searchParams.get("error");
@@ -13,7 +16,7 @@ export async function GET(request: Request) {
   const returnTo = cookieStore.get("gh_oauth_return")?.value || "/profile";
 
   const fail = (message: string) => {
-    const dest = new URL(returnTo, url.origin);
+    const dest = new URL(returnTo, origin);
     dest.searchParams.set("gh_error", message);
     return NextResponse.redirect(dest);
   };
@@ -30,8 +33,7 @@ export async function GET(request: Request) {
   }
 
   const redirectUri =
-    process.env.GITHUB_REDIRECT_URI ||
-    `${url.origin}/api/auth/github/callback`;
+    process.env.GITHUB_REDIRECT_URI || `${origin}/api/auth/github/callback`;
 
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
@@ -58,40 +60,13 @@ export async function GET(request: Request) {
   }
 
   const token = tokenJson.access_token;
-  const ghHeaders = {
-    Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${token}`,
-    "User-Agent": "CollegeConnectors",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
 
-  const userRes = await fetch("https://api.github.com/user", {
-    headers: ghHeaders,
-  });
-  if (!userRes.ok) return fail("Could not load GitHub user.");
-  const user = (await userRes.json()) as { login: string; name?: string };
-
-  // Paginate a bit — up to 100 repos is enough for scoring
-  const reposRes = await fetch(
-    "https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator",
-    { headers: ghHeaders },
-  );
-  if (!reposRes.ok) return fail("Could not load repositories.");
-  const repos = (await reposRes.json()) as GhRepo[];
-
-  const breakdown = scoreGithubRepos(repos);
-
-  const payload = {
-    login: user.login,
-    name: user.name ?? null,
-    score: breakdown.score,
-    repoCount: breakdown.repoCount,
-    originalCount: breakdown.originalCount,
-    languages: breakdown.languages.slice(0, 8),
-    highlights: breakdown.highlights,
-    factors: breakdown.factors,
-    scoredAt: Date.now(),
-  };
+  let payload;
+  try {
+    payload = await computeGithubProfile(token);
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "Could not load GitHub data.");
+  }
 
   cookieStore.set("cc_gh_profile", JSON.stringify(payload), {
     httpOnly: false,
@@ -101,7 +76,7 @@ export async function GET(request: Request) {
     maxAge: 60 * 60 * 24 * 30,
   });
 
-  // Keep token server-side only for optional rescore
+  // Keep token server-side only for optional rescore + AI feedback
   cookieStore.set("cc_gh_token", token, {
     httpOnly: true,
     sameSite: "lax",
@@ -113,7 +88,7 @@ export async function GET(request: Request) {
   cookieStore.delete("gh_oauth_state");
   cookieStore.delete("gh_oauth_return");
 
-  const dest = new URL(returnTo, url.origin);
+  const dest = new URL(returnTo, origin);
   dest.searchParams.set("gh", "connected");
   return NextResponse.redirect(dest);
 }
