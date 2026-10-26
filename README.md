@@ -1,6 +1,6 @@
 # Hackathon 26 · CollegeConnectors
 
-HackOHI/O Bridge Builder prototype — not the Apsara skincare site.
+HackOHI/O Bridge Builder prototype 
 
 Students and professionals connect around demos, reels, matching, mentors, and portfolio scoring (including GitHub OAuth).
 
